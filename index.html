@@ -65,7 +65,7 @@
                 <p class="text-slate-400 text-sm mt-1">Optical Link Budget & Excess Loss Analysis</p>
             </div>
             <div class="hidden md:block text-right text-xs text-slate-500">
-                <p>v1.4.0 | Engineering Tools</p>
+                <p>v1.4.1 | Engineering Tools</p>
             </div>
         </div>
     </header>
@@ -399,6 +399,10 @@
         function calculate() {
             // 1. Get Values
             const vIn = parseFloat(inputs.vIn.value) || 0;
+            
+            // Dynamic Slider Constraint: Max cannot exceed Input
+            inputs.vOutSlider.max = vIn;
+            
             const vOut = parseFloat(inputs.vOut.value) || 0;
             
             // Read from Number inputs (source of truth for count)

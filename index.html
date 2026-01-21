@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FSO Fiber Coupling Calculator</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Fonts -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Custom Range Slider Styling (Dark Mode) */
+        input[type=range] {
+            -webkit-appearance: none; 
+            background: transparent; 
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #3b82f6; /* Blue-500 */
+            margin-top: -6px;
+            cursor: pointer;
+            border: 2px solid #1e293b; /* Slate-800 ring */
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #475569; /* Slate-600 */
+            border-radius: 2px;
+        }
+        /* Remove arrows from number inputs */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-300 selection:bg-blue-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="bg-slate-900 border-b border-slate-800 py-6">
+        <div class="container mx-auto px-6 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight text-white">FSO Fiber Coupling Calculator</h1>
+                <p class="text-slate-400 text-sm mt-1">Optical Link Budget & Excess Loss Analysis</p>
+            </div>
+            <div class="hidden md:block text-right text-xs text-slate-500">
+                <p>v1.3.0 | Engineering Tools</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8 max-w-6xl">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Left Column: Controls -->
+            <div class="lg:col-span-5 space-y-6">
+                
+                <!-- Measurements Card -->
+                <div class="bg-slate-900 rounded-xl p-6 card-shadow border border-slate-800">
+                    <h2 class="text-lg font-semibold text-white mb-4 flex items-center">
+                        <i class="fa-solid fa-bolt text-amber-500 mr-2"></i> Photodiode Measurements
+                    </h2>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 uppercase mb-1">Input (V<sub>in</sub>)</label>
+                            <div class="relative">
+                                <input type="number" id="vIn" value="1.5" step="0.001" class="w-full pl-3 pr-10 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors font-mono text-sm placeholder-slate-600">
+                                <span class="absolute right-3 top-2 text-slate-500 text-xs">V</span>
+                            </div>
+                            <p class="text-[10px] text-slate-500 mt-1">Fiber launch reference</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 uppercase mb-1">Output (V<sub>out</sub>)</label>
+                            <div class="relative">
+                                <input type="number" id="vOut" value="0.25" step="0.001" class="w-full pl-3 pr-10 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors font-mono text-sm placeholder-slate-600">
+                                <span class="absolute right-3 top-2 text-slate-500 text-xs">V</span>
+                            </div>
+                            <p class="text-[10px] text-slate-500 mt-1">Reflected return signal</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Optical Path Configuration -->
+                <div class="bg-slate-900 rounded-xl p-6 card-shadow border border-slate-800 space-y-6">
+                    <h2 class="text-lg font-semibold text-white mb-2 flex items-center">
+                        <i class="fa-solid fa-layer-group text-blue-500 mr-2"></i> Component Config
+                    </h2>
+                    
+                    <!-- Mirrors -->
+                    <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="text-sm font-semibold text-slate-200">System Mirrors (N<sub>m</sub>)</label>
+                            <input type="number" id="mirrorCountNum" min="0" max="100" value="7" class="w-16 bg-slate-900 border border-slate-600 text-white text-xs rounded px-2 py-1 text-center font-bold focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <input type="range" id="mirrorCount" min="0" max="20" value="7" class="w-full h-2 mb-3">
+                        
+                        <div class="flex items-center justify-between">
+                            <label class="text-xs text-slate-400">Reflectivity (R<sub>m</sub>)</label>
+                            <div class="relative w-24">
+                                <input type="number" id="mirrorReflectivity" value="93.0" step="0.1" max="100" class="w-full pl-2 pr-6 py-1 text-right text-xs bg-slate-800 border border-slate-600 text-white rounded focus:ring-blue-500">
+                                <span class="absolute right-2 top-1 text-slate-500 text-xs">%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Glass Surfaces -->
+                    <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="text-sm font-semibold text-slate-200">Glass Surfaces (N<sub>g</sub>)</label>
+                            <input type="number" id="glassCountNum" min="0" max="100" value="10" class="w-16 bg-slate-900 border border-slate-600 text-white text-xs rounded px-2 py-1 text-center font-bold focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <input type="range" id="glassCount" min="0" max="30" value="10" class="w-full h-2 mb-3">
+                        
+                        <div class="flex items-center justify-between">
+                            <label class="text-xs text-slate-400">Surface Reflectivity (R<sub>g</sub>)</label>
+                            <div class="relative w-24">
+                                <input type="number" id="glassReflectivity" value="1.0" step="0.01" max="100" class="w-full pl-2 pr-6 py-1 text-right text-xs bg-slate-800 border border-slate-600 text-white rounded focus:ring-blue-500">
+                                <span class="absolute right-2 top-1 text-slate-500 text-xs">%</span>
+                            </div>
+                        </div>
+                        <p class="text-[10px] text-slate-500 mt-1 text-right">Per surface loss (e.g. 0.5% for AR)</p>
+                    </div>
+
+                    <!-- Internal BS -->
+                    <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                        <div class="flex justify-between items-start mb-2">
+                            <label class="text-sm font-semibold text-slate-200">Internal Beam Splitter</label>
+                            <span class="text-[10px] bg-amber-900/30 text-amber-200 px-1.5 py-0.5 rounded border border-amber-800/50">Double Pass</span>
+                        </div>
+                        <div class="flex items-center justify-between mt-2">
+                            <label class="text-xs text-slate-400">Transmission (T<sub>bs</sub>)</label>
+                            <div class="relative w-24">
+                                <input type="number" id="bsTransmission" value="60.0" step="0.1" max="100" class="w-full pl-2 pr-6 py-1 text-right text-xs bg-slate-800 border border-slate-600 text-white rounded focus:ring-blue-500">
+                                <span class="absolute right-2 top-1 text-slate-500 text-xs">%</span>
+                            </div>
+                        </div>
+                        <p class="text-[10px] text-slate-500 mt-1">Calculated as (T<sub>bs</sub>)<sup>2</sup> for round trip</p>
+                    </div>
+
+                    <!-- Aperture Mirror -->
+                    <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                         <div class="flex justify-between items-center mb-2">
+                            <label class="text-sm font-semibold text-slate-200">Aperture Mirror</label>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <label class="text-xs text-slate-400">Reflectivity (R<sub>ap</sub>)</label>
+                            <div class="relative w-24">
+                                <input type="number" id="apertureReflectivity" value="99.0" step="0.1" max="100" class="w-full pl-2 pr-6 py-1 text-right text-xs bg-slate-800 border border-slate-600 text-white rounded focus:ring-blue-500">
+                                <span class="absolute right-2 top-1 text-slate-500 text-xs">%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Results -->
+            <div class="lg:col-span-7 space-y-6">
+                
+                <!-- Main Result KPI -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Excess Loss Card -->
+                    <div class="bg-slate-800 text-white p-6 rounded-xl card-shadow relative overflow-hidden border border-slate-700">
+                        <div class="absolute -right-4 -top-4 opacity-5">
+                            <i class="fa-solid fa-bullseye text-9xl"></i>
+                        </div>
+                        <h3 class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Coupling Loss (Excess)</h3>
+                        <div class="flex items-baseline">
+                            <span id="excessLoss" class="text-4xl font-bold text-white tracking-tight">--</span>
+                            <span class="ml-2 text-slate-400 text-lg">dB</span>
+                        </div>
+                        
+                        <div class="mt-4 pt-4 border-t border-slate-700/50">
+                             <h3 class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Coupling Efficiency</h3>
+                             <div class="flex items-baseline">
+                                <span id="couplingEfficiency" class="text-2xl font-mono text-emerald-400">--%</span>
+                            </div>
+                             <p id="efficiencyWarning" class="hidden text-[10px] text-amber-400 mt-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Measured > Theoretical. Check inputs.</p>
+                        </div>
+                    </div>
+
+                    <!-- Bar Chart Mini Card -->
+                    <div class="bg-slate-900 p-6 rounded-xl card-shadow border border-slate-800 flex flex-col justify-center">
+                         <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm text-slate-400">System Loss (Measured)</span>
+                            <span id="measuredLoss" class="font-mono font-bold text-slate-200">-- dB</span>
+                        </div>
+                        <div class="w-full bg-slate-800 rounded-full h-1.5 mb-4">
+                            <div id="barMeasured" class="bg-slate-500 h-1.5 rounded-full" style="width: 0%"></div>
+                        </div>
+
+                         <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm text-slate-400">Component Loss (Expected)</span>
+                            <span id="expectedLoss" class="font-mono font-bold text-blue-400">-- dB</span>
+                        </div>
+                         <div class="w-full bg-blue-900/30 rounded-full h-1.5">
+                            <div id="barExpected" class="bg-blue-500 h-1.5 rounded-full" style="width: 0%"></div>
+                        </div>
+                        
+                        <div class="mt-auto pt-4 flex justify-between text-xs text-slate-500">
+                            <span>Sys Eff: <span id="sysEff" class="text-slate-300">--%</span></span>
+                            <span>Exp Eff: <span id="expEff" class="text-blue-300">--%</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Analysis Table -->
+                <div class="bg-slate-900 rounded-xl p-6 card-shadow border border-slate-800">
+                    <h3 class="font-semibold text-white mb-4 text-sm uppercase tracking-wide border-b border-slate-800 pb-2">Loss Budget Breakdown</h3>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left">
+                            <thead class="text-xs text-slate-400 bg-slate-800 uppercase">
+                                <tr>
+                                    <th class="px-4 py-3 rounded-l-lg">Source</th>
+                                    <th class="px-4 py-3">Parameters</th>
+                                    <th class="px-4 py-3 text-right">Efficiency</th>
+                                    <th class="px-4 py-3 text-right rounded-r-lg">Loss (dB)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800 text-slate-300">
+                                <tr>
+                                    <td class="px-4 py-3 font-medium text-slate-200">Mirrors</td>
+                                    <td class="px-4 py-3 text-slate-500"><span id="lblMirrors">3</span> surfaces @ <span id="lblMirrorRef">98</span>%</td>
+                                    <td class="px-4 py-3 text-right font-mono text-emerald-400" id="valMirrorLin">--</td>
+                                    <td class="px-4 py-3 text-right font-mono text-slate-400" id="valMirrordB">--</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-3 font-medium text-slate-200">Glass / Lenses</td>
+                                    <td class="px-4 py-3 text-slate-500"><span id="lblGlass">4</span> surfaces, <span id="lblGlassRef">0.5</span>% R</td>
+                                    <td class="px-4 py-3 text-right font-mono text-emerald-400" id="valGlassLin">--</td>
+                                    <td class="px-4 py-3 text-right font-mono text-slate-400" id="valGlassdB">--</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-3 font-medium text-slate-200">Internal BS</td>
+                                    <td class="px-4 py-3 text-slate-500">Double Pass, T = <span id="lblBSTrans">45</span>%</td>
+                                    <td class="px-4 py-3 text-right font-mono text-emerald-400" id="valBSLin">--</td>
+                                    <td class="px-4 py-3 text-right font-mono text-slate-400" id="valBSdB">--</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-3 font-medium text-slate-200">Aperture Mirror</td>
+                                    <td class="px-4 py-3 text-slate-500">R = <span id="lblApRef">99</span>%</td>
+                                    <td class="px-4 py-3 text-right font-mono text-emerald-400" id="valApLin">--</td>
+                                    <td class="px-4 py-3 text-right font-mono text-slate-400" id="valApdB">--</td>
+                                </tr>
+                                <tr class="bg-blue-900/20">
+                                    <td class="px-4 py-3 font-bold text-blue-400">Total Component Loss</td>
+                                    <td class="px-4 py-3 text-blue-500/70 italic">Expected theoretical floor</td>
+                                    <td class="px-4 py-3 text-right font-mono font-bold text-blue-400" id="totalCompLin">--</td>
+                                    <td class="px-4 py-3 text-right font-mono font-bold text-blue-400" id="totalCompdB">--</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Charts Area -->
+                <div class="bg-slate-900 rounded-xl p-6 card-shadow border border-slate-800">
+                    <canvas id="lossChart" height="120"></canvas>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // --- DOM Elements ---
+        const inputs = {
+            vIn: document.getElementById('vIn'),
+            vOut: document.getElementById('vOut'),
+            // Mirrors
+            mirrorCountSlider: document.getElementById('mirrorCount'), 
+            mirrorCountNum: document.getElementById('mirrorCountNum'),
+            mirrorRef: document.getElementById('mirrorReflectivity'),
+            // Glass
+            glassCountSlider: document.getElementById('glassCount'), 
+            glassCountNum: document.getElementById('glassCountNum'),
+            glassRef: document.getElementById('glassReflectivity'),
+            // Other
+            bsTrans: document.getElementById('bsTransmission'),
+            apRef: document.getElementById('apertureReflectivity'),
+        };
+
+        const displays = {
+            lblMirrors: document.getElementById('lblMirrors'),
+            lblMirrorRef: document.getElementById('lblMirrorRef'),
+            lblGlass: document.getElementById('lblGlass'),
+            lblGlassRef: document.getElementById('lblGlassRef'),
+            lblBSTrans: document.getElementById('lblBSTrans'),
+            lblApRef: document.getElementById('lblApRef')
+        };
+
+        const results = {
+            excessLoss: document.getElementById('excessLoss'),
+            couplingEfficiency: document.getElementById('couplingEfficiency'),
+            efficiencyWarning: document.getElementById('efficiencyWarning'),
+            measuredLoss: document.getElementById('measuredLoss'),
+            expectedLoss: document.getElementById('expectedLoss'),
+            barMeasured: document.getElementById('barMeasured'),
+            barExpected: document.getElementById('barExpected'),
+            sysEff: document.getElementById('sysEff'),
+            expEff: document.getElementById('expEff'),
+            
+            // Table
+            valMirrorLin: document.getElementById('valMirrorLin'),
+            valMirrordB: document.getElementById('valMirrordB'),
+            valGlassLin: document.getElementById('valGlassLin'),
+            valGlassdB: document.getElementById('valGlassdB'),
+            valBSLin: document.getElementById('valBSLin'),
+            valBSdB: document.getElementById('valBSdB'),
+            valApLin: document.getElementById('valApLin'),
+            valApdB: document.getElementById('valApdB'),
+            totalCompLin: document.getElementById('totalCompLin'),
+            totalCompdB: document.getElementById('totalCompdB'),
+        };
+
+        // --- Chart Config ---
+        Chart.defaults.color = '#94a3b8'; // slate-400
+        Chart.defaults.borderColor = '#334155'; // slate-700
+
+        let lossChart;
+        function initChart() {
+            const ctx = document.getElementById('lossChart').getContext('2d');
+            lossChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Mirrors', 'Glass', 'BS (2x)', 'Aperture', 'Coupling (Excess)'],
+                    datasets: [{
+                        label: 'Loss Contribution (dB)',
+                        data: [0, 0, 0, 0, 0],
+                        backgroundColor: [
+                            '#475569', // Mirrors (slate-600)
+                            '#475569', // Glass
+                            '#64748b', // BS (slate-500)
+                            '#334155', // Aperture (slate-700)
+                            '#f59e0b'  // Coupling (Amber-500 for attention)
+                        ],
+                        borderRadius: 4,
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            titleColor: '#e2e8f0',
+                            bodyColor: '#e2e8f0',
+                            borderColor: '#475569',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: (ctx) => `${ctx.formattedValue} dB`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Attenuation (dB)', color: '#64748b' },
+                            beginAtZero: true,
+                            grid: { color: '#334155' }
+                        },
+                        y: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- Math & Logic ---
+        function calculate() {
+            // 1. Get Values
+            const vIn = parseFloat(inputs.vIn.value) || 0;
+            const vOut = parseFloat(inputs.vOut.value) || 0;
+            
+            // Read from Number inputs (source of truth for count)
+            const N_m = parseInt(inputs.mirrorCountNum.value) || 0;
+            const R_m = (parseFloat(inputs.mirrorRef.value) || 0) / 100;
+            
+            const N_g = parseInt(inputs.glassCountNum.value) || 0;
+            const R_g = (parseFloat(inputs.glassRef.value) || 0) / 100;
+            
+            const T_bs = (parseFloat(inputs.bsTrans.value) || 0) / 100;
+            const R_ap = (parseFloat(inputs.apRef.value) || 0) / 100;
+
+            // Update Labels
+            displays.lblMirrors.textContent = N_m;
+            displays.lblMirrorRef.textContent = (R_m * 100).toFixed(1);
+            displays.lblGlass.textContent = N_g;
+            displays.lblGlassRef.textContent = (R_g * 100).toFixed(2);
+            displays.lblBSTrans.textContent = (T_bs * 100).toFixed(1);
+            displays.lblApRef.textContent = (R_ap * 100).toFixed(1);
+
+            // 2. Component Calculations (Linear Factors)
+            // Mirrors: R^N
+            const factorMirrors = Math.pow(R_m, N_m);
+            // Glass: (1-R)^N (Transmission per surface)
+            const T_surf = 1 - R_g;
+            const factorGlass = Math.pow(T_surf, N_g);
+            // BS: Transmits twice -> T^2
+            const factorBS = Math.pow(T_bs, 2);
+            // Aperture Mirror: R
+            const factorAp = R_ap;
+
+            const totalExpectedFactor = factorMirrors * factorGlass * factorBS * factorAp;
+
+            // 3. dB Calculations
+            const toDB = (val) => val > 0 ? -10 * Math.log10(val) : 0;
+            
+            const dbMirrors = toDB(factorMirrors);
+            const dbGlass = toDB(factorGlass);
+            const dbBS = toDB(factorBS);
+            const dbAp = toDB(factorAp);
+            const dbExpectedTotal = dbMirrors + dbGlass + dbBS + dbAp;
+
+            // 4. Measured System Values
+            let dbMeasuredTotal = 0;
+            let measuredLinear = 0;
+            if (vIn > 0 && vOut > 0) {
+                measuredLinear = vOut / vIn;
+                dbMeasuredTotal = -10 * Math.log10(measuredLinear);
+            } else if (vIn > 0 && vOut === 0) {
+                dbMeasuredTotal = 999; // Total loss
+            }
+
+            // 5. Excess (Coupling) Loss
+            let dbCoupling = dbMeasuredTotal - dbExpectedTotal;
+            
+            // NOTE: REMOVED clamp to allow negative dB (gain vs theory)
+            // if (dbCoupling < 0) dbCoupling = 0; 
+            
+            if (dbMeasuredTotal === 999) dbCoupling = 0;
+            
+            // Coupling Efficiency (Linear)
+            const couplingEff = Math.pow(10, -dbCoupling / 10);
+
+            // 6. Update UI
+            const toPct = (val) => (val * 100).toFixed(1) + "%";
+
+            results.valMirrorLin.textContent = toPct(factorMirrors);
+            results.valMirrordB.textContent = dbMirrors.toFixed(2);
+            results.valGlassLin.textContent = toPct(factorGlass);
+            results.valGlassdB.textContent = dbGlass.toFixed(2);
+            results.valBSLin.textContent = toPct(factorBS);
+            results.valBSdB.textContent = dbBS.toFixed(2);
+            results.valApLin.textContent = toPct(factorAp);
+            results.valApdB.textContent = dbAp.toFixed(2);
+            
+            results.totalCompLin.textContent = toPct(totalExpectedFactor);
+            results.totalCompdB.textContent = dbExpectedTotal.toFixed(2);
+
+            results.measuredLoss.textContent = dbMeasuredTotal.toFixed(2) + " dB";
+            results.expectedLoss.textContent = dbExpectedTotal.toFixed(2) + " dB";
+            results.excessLoss.textContent = dbCoupling.toFixed(2);
+            
+            results.couplingEfficiency.textContent = toPct(couplingEff);
+            
+            // Warning logic for Eff > 100%
+            if (couplingEff > 1.0) {
+                results.couplingEfficiency.classList.remove('text-emerald-400');
+                results.couplingEfficiency.classList.add('text-amber-400');
+                results.efficiencyWarning.classList.remove('hidden');
+            } else {
+                results.couplingEfficiency.classList.add('text-emerald-400');
+                results.couplingEfficiency.classList.remove('text-amber-400');
+                results.efficiencyWarning.classList.add('hidden');
+            }
+            
+            results.sysEff.textContent = toPct(measuredLinear);
+            results.expEff.textContent = toPct(totalExpectedFactor);
+
+            // Progress bars
+            const maxVal = Math.max(dbMeasuredTotal, dbExpectedTotal, 10); 
+            results.barMeasured.style.width = Math.min((dbMeasuredTotal / maxVal) * 100, 100) + "%";
+            results.barExpected.style.width = Math.min((dbExpectedTotal / maxVal) * 100, 100) + "%";
+
+            // 7. Update Chart
+            if (lossChart) {
+                // If coupling is negative (eff > 100%), chart handles it but looks weird. 
+                // We clamp visual chart data to 0 min for clarity unless specific need.
+                // But user wants to see results. We'll leave raw value.
+                
+                lossChart.data.datasets[0].data = [
+                    parseFloat(dbMirrors.toFixed(2)), 
+                    parseFloat(dbGlass.toFixed(2)), 
+                    parseFloat(dbBS.toFixed(2)), 
+                    parseFloat(dbAp.toFixed(2)), 
+                    parseFloat(dbCoupling.toFixed(2))
+                ];
+                
+                // Change bar color if negative loss (gain)
+                const couplingColor = dbCoupling < 0 ? '#ef4444' : '#f59e0b'; // Red if impossible, Amber normal
+                lossChart.data.datasets[0].backgroundColor[4] = couplingColor;
+                
+                lossChart.update();
+            }
+        }
+
+        // --- Event Listeners ---
+        
+        // 1. Sync Logic for Mirrors
+        inputs.mirrorCountSlider.addEventListener('input', () => {
+            inputs.mirrorCountNum.value = inputs.mirrorCountSlider.value;
+            calculate();
+        });
+        inputs.mirrorCountNum.addEventListener('input', () => {
+            inputs.mirrorCountSlider.value = inputs.mirrorCountNum.value;
+            calculate();
+        });
+
+        // 2. Sync Logic for Glass
+        inputs.glassCountSlider.addEventListener('input', () => {
+            inputs.glassCountNum.value = inputs.glassCountSlider.value;
+            calculate();
+        });
+        inputs.glassCountNum.addEventListener('input', () => {
+            inputs.glassCountSlider.value = inputs.glassCountNum.value;
+            calculate();
+        });
+
+        // 3. Other Inputs
+        [inputs.vIn, inputs.vOut, inputs.mirrorRef, inputs.glassRef, inputs.bsTrans, inputs.apRef].forEach(input => {
+            input.addEventListener('input', calculate);
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initChart();
+            calculate();
+        });
+
+    </script>
+</body>
+</html>

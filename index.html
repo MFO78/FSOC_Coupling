@@ -87,7 +87,7 @@
                         <div>
                             <label class="block text-xs font-medium text-slate-400 uppercase mb-1">Input (V<sub>in</sub>)</label>
                             <div class="relative">
-                                <input type="number" id="vIn" value="0.375" step="0.001" class="w-full pl-3 pr-10 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors font-mono text-sm placeholder-slate-600">
+                                <input type="number" id="vIn" value="0.411" step="0.001" class="w-full pl-3 pr-10 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors font-mono text-sm placeholder-slate-600">
                                 <span class="absolute right-3 top-2 text-slate-500 text-xs">V</span>
                             </div>
                             <p class="text-[10px] text-slate-500 mt-1">Fiber launch reference</p>
@@ -95,7 +95,7 @@
                         <div>
                             <label class="block text-xs font-medium text-slate-400 uppercase mb-1">Output (V<sub>out</sub>)</label>
                             <div class="relative mb-2">
-                                <input type="number" id="vOut" value="0.055" step="0.001" class="w-full pl-3 pr-10 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors font-mono text-sm placeholder-slate-600">
+                                <input type="number" id="vOut" value="0.060" step="0.001" class="w-full pl-3 pr-10 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors font-mono text-sm placeholder-slate-600">
                                 <span class="absolute right-3 top-2 text-slate-500 text-xs">V</span>
                             </div>
                             <!-- Added Slider -->
@@ -117,12 +117,12 @@
                             <label class="text-sm font-semibold text-slate-200">System Mirrors (N<sub>m</sub>)</label>
                             <input type="number" id="mirrorCountNum" min="0" max="100" value="7" class="w-16 bg-slate-900 border border-slate-600 text-white text-xs rounded px-2 py-1 text-center font-bold focus:ring-blue-500 focus:border-blue-500">
                         </div>
-                        <input type="range" id="mirrorCount" min="0" max="20" value="7" class="w-full h-2 mb-3">
+                        <input type="range" id="mirrorCount" min="0" max="20" value="6" class="w-full h-2 mb-3">
                         
                         <div class="flex items-center justify-between">
                             <label class="text-xs text-slate-400">Reflectivity (R<sub>m</sub>)</label>
                             <div class="relative w-24">
-                                <input type="number" id="mirrorReflectivity" value="93.0" step="0.1" max="100" class="w-full pl-2 pr-6 py-1 text-right text-xs bg-slate-800 border border-slate-600 text-white rounded focus:ring-blue-500">
+                                <input type="number" id="mirrorReflectivity" value="96.0" step="0.1" max="100" class="w-full pl-2 pr-6 py-1 text-right text-xs bg-slate-800 border border-slate-600 text-white rounded focus:ring-blue-500">
                                 <span class="absolute right-2 top-1 text-slate-500 text-xs">%</span>
                             </div>
                         </div>
@@ -139,7 +139,7 @@
                         <div class="flex items-center justify-between">
                             <label class="text-xs text-slate-400">Surface Reflectivity (R<sub>g</sub>)</label>
                             <div class="relative w-24">
-                                <input type="number" id="glassReflectivity" value="0.5" step="0.01" max="100" class="w-full pl-2 pr-6 py-1 text-right text-xs bg-slate-800 border border-slate-600 text-white rounded focus:ring-blue-500">
+                                <input type="number" id="glassReflectivity" value="0.05" step="0.01" max="100" class="w-full pl-2 pr-6 py-1 text-right text-xs bg-slate-800 border border-slate-600 text-white rounded focus:ring-blue-500">
                                 <span class="absolute right-2 top-1 text-slate-500 text-xs">%</span>
                             </div>
                         </div>
@@ -165,12 +165,12 @@
                     <!-- Aperture Mirror -->
                     <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
                          <div class="flex justify-between items-center mb-2">
-                            <label class="text-sm font-semibold text-slate-200">Aperture Mirror</label>
+                            <label class="text-sm font-semibold text-slate-200">Aperture Flat Mirror</label>
                         </div>
                         <div class="flex items-center justify-between">
                             <label class="text-xs text-slate-400">Reflectivity (R<sub>ap</sub>)</label>
                             <div class="relative w-24">
-                                <input type="number" id="apertureReflectivity" value="90.0" step="0.1" max="100" class="w-full pl-2 pr-6 py-1 text-right text-xs bg-slate-800 border border-slate-600 text-white rounded focus:ring-blue-500">
+                                <input type="number" id="apertureReflectivity" value="95.0" step="0.1" max="100" class="w-full pl-2 pr-6 py-1 text-right text-xs bg-slate-800 border border-slate-600 text-white rounded focus:ring-blue-500">
                                 <span class="absolute right-2 top-1 text-slate-500 text-xs">%</span>
                             </div>
                         </div>

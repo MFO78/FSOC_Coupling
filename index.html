@@ -11,6 +11,10 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    <!-- html2canvas & jsPDF for absolute export control -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -19,7 +23,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
         
-        /* Custom Range Slider Styling (Dark Mode) */
+        /* Custom Range Slider Styling */
         input[type=range] {
             -webkit-appearance: none; 
             background: transparent; 
@@ -29,19 +33,18 @@
             height: 16px;
             width: 16px;
             border-radius: 50%;
-            background: #3b82f6; /* Blue-500 */
+            background: #3b82f6;
             margin-top: -6px;
             cursor: pointer;
-            border: 2px solid #1e293b; /* Slate-800 ring */
+            border: 2px solid #1e293b;
         }
         input[type=range]::-webkit-slider-runnable-track {
             width: 100%;
             height: 4px;
             cursor: pointer;
-            background: #475569; /* Slate-600 */
+            background: #475569;
             border-radius: 2px;
         }
-        /* Remove arrows from number inputs */
         input[type=number]::-webkit-inner-spin-button, 
         input[type=number]::-webkit-outer-spin-button { 
             -webkit-appearance: none; 
@@ -53,91 +56,172 @@
         .card-shadow {
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
         }
+
+        /* Typography - Small Caps for Variables */
+        .var-sc {
+            font-variant: small-caps;
+            text-transform: lowercase;
+        }
+
+        /* Hide specific elements during PDF generation */
+        .pdf-exporting .hide-on-export {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* -----------------------------------------------------------------
+           Light Theme PDF Overrides (Active during export snapshot)
+           ----------------------------------------------------------------- */
+        .pdf-exporting #export-content { background-color: #f8fafc !important; width: 1200px !important; margin: 0 auto; }
+        .pdf-exporting .bg-slate-950 { background-color: #f8fafc !important; }
+        .pdf-exporting .bg-slate-900 { background-color: #ffffff !important; }
+        .pdf-exporting .bg-slate-800 { background-color: #ffffff !important; }
+        .pdf-exporting .bg-slate-800\/50 { background-color: #f1f5f9 !important; }
+        
+        /* Typography overrides */
+        .pdf-exporting .text-white { color: #0f172a !important; }
+        .pdf-exporting .text-slate-200 { color: #1e293b !important; }
+        .pdf-exporting .text-slate-300 { color: #334155 !important; }
+        .pdf-exporting .text-slate-400 { color: #475569 !important; }
+        .pdf-exporting .text-slate-500 { color: #64748b !important; }
+        
+        /* Borders and divides */
+        .pdf-exporting .border-slate-800, 
+        .pdf-exporting .border-slate-700, 
+        .pdf-exporting .border-slate-600 { border-color: #cbd5e1 !important; }
+        .pdf-exporting .border-t.border-slate-800 { border-color: #e2e8f0 !important; }
+        .pdf-exporting .divide-slate-800 > :not([hidden]) ~ :not([hidden]) { border-color: #e2e8f0 !important; }
+        
+        /* Interactive Data -> Report Text Conversion */
+        .pdf-exporting input[type=range] { display: none !important; } /* Strips all sliders */
+        
+        .pdf-exporting .card-shadow { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important; border: 1px solid #e2e8f0 !important; }
+
+        /* Specific Color Badges (Blue, Amber, Indigo) -> Lightened background, darker text */
+        .pdf-exporting .bg-blue-900\/40 { background-color: #dbeafe !important; }
+        .pdf-exporting .text-blue-300 { color: #1d4ed8 !important; }
+        .pdf-exporting .border-blue-800\/50 { border-color: #bfdbfe !important; }
+        .pdf-exporting .text-blue-400 { color: #2563eb !important; }
+
+        .pdf-exporting .bg-amber-900\/40 { background-color: #fef3c7 !important; }
+        .pdf-exporting .text-amber-300 { color: #b45309 !important; }
+        .pdf-exporting .border-amber-800\/50 { border-color: #fde68a !important; }
+        .pdf-exporting .text-amber-400 { color: #d97706 !important; }
+        
+        .pdf-exporting .bg-indigo-900\/40 { background-color: #e0e7ff !important; }
+        .pdf-exporting .text-indigo-300 { color: #4338ca !important; }
+        .pdf-exporting .border-indigo-800\/50 { border-color: #c7d2fe !important; }
+
+        .pdf-exporting .text-emerald-400 { color: #059669 !important; }
+        .pdf-exporting .opacity-\[0\.03\] { opacity: 0.05 !important; color: #cbd5e1 !important; }
+
+        /* Mild Structural Compacting to optimize aspect ratio before scale down */
+        .pdf-exporting header { padding-top: 1rem !important; padding-bottom: 1rem !important; }
+        .pdf-exporting .py-8 { padding-top: 1rem !important; padding-bottom: 1rem !important; }
+        .pdf-exporting .gap-8 { gap: 1rem !important; }
+        .pdf-exporting .gap-4 { gap: 0.5rem !important; }
+        .pdf-exporting .space-y-6 > * + * { margin-top: 0.75rem !important; }
+        .pdf-exporting .p-6 { padding: 1rem !important; }
+        .pdf-exporting .mb-4 { margin-bottom: 0.5rem !important; }
+        .pdf-exporting footer { padding-bottom: 0.5rem !important; padding-top: 0.5rem !important; margin-top: 0.5rem !important; }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-300 selection:bg-blue-500 selection:text-white">
+<body class="bg-slate-950 text-slate-300 selection:bg-blue-500 selection:text-white" id="app-body">
 
-    <!-- Header -->
-    <header class="bg-slate-900 border-b border-slate-800 py-6">
-        <div class="container mx-auto px-6 flex justify-between items-center">
-            <div>
-                <h1 class="text-2xl font-bold tracking-tight text-white">FSO Fiber Coupling Calculator</h1>
-                <p class="text-slate-400 text-sm mt-1">Optical Link Budget & Excess Loss Analysis</p>
-            </div>
-            <div class="hidden md:block text-right text-xs text-slate-500">
-                <p>v1.4.1 | Engineering Tools</p>
-            </div>
-        </div>
-    </header>
-
-    <main class="container mx-auto px-4 py-8 max-w-6xl">
+    <!-- Wrapper for targeted PDF extraction -->
+    <div id="export-content" class="w-full bg-slate-950 transition-colors">
         
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            
-            <!-- Left Column: Controls -->
-            <div class="lg:col-span-5 space-y-6">
-                
-                <!-- Measurements Card -->
-                <div class="bg-slate-900 rounded-xl p-6 card-shadow border border-slate-800">
-                    <h2 class="text-lg font-semibold text-white mb-4 flex items-center">
-                        <i class="fa-solid fa-bolt text-amber-500 mr-2"></i> Photodiode Measurements
-                    </h2>
-                    
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-medium text-slate-400 uppercase mb-1">Input (V<sub>in</sub>)</label>
-                            <div class="relative">
-                                <input type="number" id="vIn" value="0.411" step="0.001" class="w-full pl-3 pr-10 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors font-mono text-sm placeholder-slate-600">
-                                <span class="absolute right-3 top-2 text-slate-500 text-xs">V</span>
-                            </div>
-                            <p class="text-[10px] text-slate-500 mt-1">Fiber launch reference</p>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-slate-400 uppercase mb-1">Output (V<sub>out</sub>)</label>
-                            <div class="relative mb-2">
-                                <input type="number" id="vOut" value="0.060" step="0.001" class="w-full pl-3 pr-10 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors font-mono text-sm placeholder-slate-600">
-                                <span class="absolute right-3 top-2 text-slate-500 text-xs">V</span>
-                            </div>
-                            <!-- Added Slider -->
-                            <input type="range" id="vOutSlider" min="0" max="5" step="0.001" value="0.25" class="w-full h-2">
-                            <p class="text-[10px] text-slate-500 mt-1">Reflected return signal</p>
-                        </div>
-                    </div>
+        <header class="bg-slate-900 border-b border-slate-800 py-6">
+            <div class="container mx-auto px-6 flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-bold tracking-tight text-white">FSO Fiber Coupling Calculator</h1>
+                    <p class="text-slate-400 text-sm mt-1">Simultaneous Optical Link Budget Analysis</p>
                 </div>
+                <div class="hidden md:flex flex-col items-end gap-2">
+                    <p class="text-xs text-slate-500 font-mono">v2.4.0 | AF Engineering Tools</p>
+                    <button id="btnExport" class="hide-on-export flex items-center text-[11px] font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 py-1.5 px-3 rounded border border-slate-700 transition-colors shadow-sm">
+                        <i class="fa-solid fa-file-pdf text-red-400 mr-2"></i> Export PDF
+                    </button>
+                </div>
+            </div>
+        </header>
 
-                <!-- Optical Path Configuration -->
-                <div class="bg-slate-900 rounded-xl p-6 card-shadow border border-slate-800 space-y-6">
-                    <h2 class="text-lg font-semibold text-white mb-2 flex items-center">
-                        <i class="fa-solid fa-layer-group text-blue-500 mr-2"></i> Component Config
-                    </h2>
+        <main class="container mx-auto px-4 py-8 max-w-7xl">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                
+                <!-- Left Column: Controls -->
+                <div class="lg:col-span-4 space-y-6">
                     
-                    <!-- Mirrors -->
-                    <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
-                        <div class="flex justify-between items-center mb-2">
-                            <label class="text-sm font-semibold text-slate-200">System Mirrors (N<sub>m</sub>)</label>
-                            <input type="number" id="mirrorCountNum" min="0" max="100" value="6" class="w-16 bg-slate-900 border border-slate-600 text-white text-xs rounded px-2 py-1 text-center font-bold focus:ring-blue-500 focus:border-blue-500">
-                        </div>
-                        <input type="range" id="mirrorCount" min="0" max="20" value="6" class="w-full h-2 mb-3">
+                    <!-- Measurements Card -->
+                    <div class="bg-slate-900 rounded-xl p-6 card-shadow border border-slate-800">
+                        <h2 class="text-lg font-semibold text-white mb-4 flex items-center">
+                            <i class="fa-solid fa-bolt text-amber-500 mr-2"></i> Photodiode Measurements
+                        </h2>
                         
-                        <div class="flex items-center justify-between">
-                            <label class="text-xs text-slate-400">Reflectivity (R<sub>m</sub>)</label>
-                            <div class="relative w-24">
-                                <input type="number" id="mirrorReflectivity" value="94.0" step="0.1" max="100" class="w-full pl-2 pr-6 py-1 text-right text-xs bg-slate-800 border border-slate-600 text-white rounded focus:ring-blue-500">
-                                <span class="absolute right-2 top-1 text-slate-500 text-xs">%</span>
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 uppercase mb-1">Measured (<span class="var-sc">V<sub>in,meas</sub></span>)</label>
+                                <div class="relative">
+                                    <input type="number" id="vInMeasured" value="0.411" step="0.001" class="w-full pl-3 pr-8 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors font-mono text-sm placeholder-slate-600">
+                                    <span class="absolute right-3 top-2 text-slate-500 text-xs">V</span>
+                                </div>
+                                <p class="text-[10px] text-slate-500 mt-1">Double Pass Launch</p>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 uppercase mb-1">Reference (<span class="var-sc">V<sub>in,ref</sub></span>)</label>
+                                <div class="relative">
+                                    <input type="number" id="vInRef" readonly class="w-full pl-3 pr-8 py-2 bg-slate-900 border border-slate-700 text-slate-400 rounded-lg font-mono text-sm cursor-not-allowed">
+                                    <span class="absolute right-3 top-2 text-slate-600 text-xs">V</span>
+                                </div>
+                                <p class="text-[10px] text-slate-500 mt-1">Computed SP Baseline</p>
                             </div>
                         </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 uppercase mb-1">Output (<span class="var-sc">V<sub>out</sub></span>)</label>
+                            <div class="relative mb-2">
+                                <input type="number" id="vOut" value="0.030" step="0.001" class="w-full pl-3 pr-8 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors font-mono text-sm placeholder-slate-600">
+                                <span class="absolute right-3 top-2 text-slate-500 text-xs">V</span>
+                            </div>
+                            <input type="range" id="vOutSlider" min="0" max="5" step="0.001" value="0.030" class="w-full h-2">
+                            <p class="text-[10px] text-slate-500 mt-1">Coupled Return Signal</p>
+                        </div>
                     </div>
+
+                    <!-- Optical Path Configuration -->
+                    <div class="bg-slate-900 rounded-xl p-6 card-shadow border border-slate-800 space-y-6">
+                        <div class="flex justify-between items-center mb-2">
+                            <h2 class="text-lg font-semibold text-white flex items-center">
+                                <i class="fa-solid fa-layer-group text-blue-500 mr-2"></i> Base Components
+                            </h2>
+                        </div>
+                        
+                        <!-- Mirrors -->
+                        <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="text-sm font-semibold text-slate-200">System Mirrors (<span class="var-sc">N<sub>m</sub></span>)</label>
+                                <input type="number" id="mirrorCountNum" min="0" max="100" value="3" class="w-16 bg-slate-900 border border-slate-600 text-white text-xs rounded px-2 py-1 text-center font-bold focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <input type="range" id="mirrorCount" min="0" max="20" value="3" class="w-full h-2 mb-3">
+                            
+                            <div class="flex items-center justify-between">
+                                <label class="text-xs text-slate-400">Reflectivity (<span class="var-sc">R<sub>m</sub></span>)</label>
+                                <div class="relative w-24">
+                                    <input type="number" id="mirrorReflectivity" value="94.0" step="0.1" max="100" class="w-full pl-2 pr-6 py-1 text-right text-xs bg-slate-800 border border-slate-600 text-white rounded focus:ring-blue-500">
+                                    <span class="absolute right-2 top-1 text-slate-500 text-xs">%</span>
+                                </div>
+                            </div>
+                        </div>
 
                     <!-- Glass Surfaces -->
                     <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
                         <div class="flex justify-between items-center mb-2">
-                            <label class="text-sm font-semibold text-slate-200">Glass Surfaces (N<sub>g</sub>)</label>
-                            <input type="number" id="glassCountNum" min="0" max="100" value="10" class="w-16 bg-slate-900 border border-slate-600 text-white text-xs rounded px-2 py-1 text-center font-bold focus:ring-blue-500 focus:border-blue-500">
+                            <label class="text-sm font-semibold text-slate-200">Glass Surfaces (<span class="var-sc">N<sub>g</sub></span>)</label>
+                            <input type="number" id="glassCountNum" min="0" max="100" value="4" class="w-16 bg-slate-900 border border-slate-600 text-white text-xs rounded px-2 py-1 text-center font-bold focus:ring-blue-500 focus:border-blue-500">
                         </div>
-                        <input type="range" id="glassCount" min="0" max="30" value="10" class="w-full h-2 mb-3">
+                        <input type="range" id="glassCount" min="0" max="30" value="4" class="w-full h-2 mb-3">
                         
                         <div class="flex items-center justify-between">
-                            <label class="text-xs text-slate-400">Surface Reflectivity (R<sub>g</sub>)</label>
+                            <label class="text-xs text-slate-400">Surface Reflectivity (<span class="var-sc">R<sub>g</sub></span>)</label>
                             <div class="relative w-24">
                                 <input type="number" id="glassReflectivity" value="1" step="0.01" max="100" class="w-full pl-2 pr-6 py-1 text-right text-xs bg-slate-800 border border-slate-600 text-white rounded focus:ring-blue-500">
                                 <span class="absolute right-2 top-1 text-slate-500 text-xs">%</span>
@@ -149,12 +233,26 @@
                     <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
                         <div class="flex justify-between items-start mb-2">
                             <label class="text-sm font-semibold text-slate-200">Internal Beam Splitter</label>
-                            <span class="text-[10px] bg-amber-900/30 text-amber-200 px-1.5 py-0.5 rounded border border-amber-800/50">Double Pass</span>
                         </div>
                         <div class="flex items-center justify-between mt-2">
-                            <label class="text-xs text-slate-400">Transmission (T<sub>bs</sub>)</label>
+                            <label class="text-xs text-slate-400">Transmission (<span class="var-sc">T<sub>bs</sub></span>)</label>
                             <div class="relative w-24">
                                 <input type="number" id="bsTransmission" value="60.0" step="0.1" max="100" class="w-full pl-2 pr-6 py-1 text-right text-xs bg-slate-800 border border-slate-600 text-white rounded focus:ring-blue-500">
+                                <span class="absolute right-2 top-1 text-slate-500 text-xs">%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- External BS -->
+                    <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                        <div class="flex justify-between items-start mb-2">
+                            <label class="text-sm font-semibold text-slate-200">External Beam Splitter</label>
+                            <span class="text-[10px] bg-indigo-900/40 text-indigo-300 px-1.5 py-0.5 rounded border border-indigo-800/50">Double Pass Only</span>
+                        </div>
+                        <div class="flex items-center justify-between mt-2">
+                            <label class="text-xs text-slate-400">Transmission (<span class="var-sc">T<sub>ext</sub></span>)</label>
+                            <div class="relative w-24">
+                                <input type="number" id="extBsTransmission" value="50.0" step="0.1" max="100" class="w-full pl-2 pr-6 py-1 text-right text-xs bg-slate-800 border border-slate-600 text-white rounded focus:ring-blue-500">
                                 <span class="absolute right-2 top-1 text-slate-500 text-xs">%</span>
                             </div>
                         </div>
@@ -164,9 +262,10 @@
                     <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
                          <div class="flex justify-between items-center mb-2">
                             <label class="text-sm font-semibold text-slate-200">Aperture Flat Mirror</label>
+                            <span class="text-[10px] bg-indigo-900/40 text-indigo-300 px-1.5 py-0.5 rounded border border-indigo-800/50">Double Pass Only</span>
                         </div>
                         <div class="flex items-center justify-between">
-                            <label class="text-xs text-slate-400">Reflectivity (R<sub>ap</sub>)</label>
+                            <label class="text-xs text-slate-400">Reflectivity (<span class="var-sc">R<sub>ap</sub></span>)</label>
                             <div class="relative w-24">
                                 <input type="number" id="apertureReflectivity" value="95.0" step="0.1" max="100" class="w-full pl-2 pr-6 py-1 text-right text-xs bg-slate-800 border border-slate-600 text-white rounded focus:ring-blue-500">
                                 <span class="absolute right-2 top-1 text-slate-500 text-xs">%</span>
@@ -177,99 +276,126 @@
             </div>
 
             <!-- Right Column: Results -->
-            <div class="lg:col-span-7 space-y-6">
+            <div class="lg:col-span-8 space-y-6">
                 
-                <!-- Main Result KPI -->
+                <!-- Dual Result KPIs -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Excess Loss Card -->
-                    <div class="bg-slate-800 text-white p-6 rounded-xl card-shadow relative overflow-hidden border border-slate-700">
-                        <div class="absolute -right-4 -top-4 opacity-5">
+                    
+                    <!-- SMF Loss Card (Double Pass) -->
+                    <div class="bg-slate-800 text-white p-6 rounded-xl card-shadow border border-amber-500/30 relative overflow-hidden">
+                        <div class="absolute -right-4 -top-4 opacity-[0.03]">
                             <i class="fa-solid fa-bullseye text-9xl"></i>
                         </div>
-                        <h3 class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Coupling Loss (Excess)</h3>
+                        <div class="flex justify-between items-start mb-1">
+                            <h3 class="text-amber-400 text-xs font-semibold uppercase tracking-wider">SMF Loss</h3>
+                            <span class="text-[10px] bg-amber-900/40 text-amber-300 px-2 py-0.5 rounded-full border border-amber-800/50">Double Pass</span>
+                        </div>
                         <div class="flex items-baseline">
-                            <span id="excessLoss" class="text-4xl font-bold text-white tracking-tight">--</span>
+                            <span id="smfLoss" class="text-4xl font-bold text-white tracking-tight">--</span>
                             <span class="ml-2 text-slate-400 text-lg">dB</span>
                         </div>
                         
                         <div class="mt-4 pt-4 border-t border-slate-700/50">
-                             <h3 class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Coupling Efficiency</h3>
+                             <h3 class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">SMF Efficiency</h3>
                              <div class="flex items-baseline">
-                                <span id="couplingEfficiency" class="text-2xl font-mono text-emerald-400">--%</span>
+                                <span id="smfEfficiency" class="text-2xl font-mono text-emerald-400">--%</span>
                             </div>
-                             <p id="efficiencyWarning" class="hidden text-[10px] text-amber-400 mt-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Measured > Theoretical. Check inputs.</p>
+                            <p class="text-[10px] text-slate-500 mt-1 font-mono tracking-tighter"><span class="var-sc">η<sub>smf</sub></span> = (<span class="var-sc">V<sub>out</sub></span> / <span class="var-sc">V<sub>in,meas</sub></span>) / <span class="var-sc">DP<sub>eff</sub></span></p>
+                             <p id="smfWarning" class="hidden text-[10px] text-amber-400 mt-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Measured > Theoretical.</p>
                         </div>
                     </div>
 
-                    <!-- Bar Chart Mini Card -->
-                    <div class="bg-slate-900 p-6 rounded-xl card-shadow border border-slate-800 flex flex-col justify-center">
-                         <div class="flex justify-between items-center mb-2">
-                            <span class="text-sm text-slate-400">Measured Loss</span>
-                            <span id="measuredLoss" class="font-mono font-bold text-slate-200">-- dB</span>
+                    <!-- System Loss Card (Single Pass) -->
+                    <div class="bg-slate-800 text-white p-6 rounded-xl card-shadow border border-blue-500/30 relative overflow-hidden">
+                        <div class="absolute -right-4 -top-4 opacity-[0.03]">
+                            <i class="fa-solid fa-wave-square text-9xl"></i>
                         </div>
-                        <div class="w-full bg-slate-800 rounded-full h-1.5 mb-4">
-                            <div id="barMeasured" class="bg-slate-500 h-1.5 rounded-full" style="width: 0%"></div>
+                        <div class="flex justify-between items-start mb-1">
+                            <h3 class="text-blue-400 text-xs font-semibold uppercase tracking-wider">System Loss</h3>
+                            <span class="text-[10px] bg-blue-900/40 text-blue-300 px-2 py-0.5 rounded-full border border-blue-800/50">Single Pass</span>
                         </div>
-
-                         <div class="flex justify-between items-center mb-2">
-                            <span class="text-sm text-slate-400">Theoretical Loss</span>
-                            <span id="expectedLoss" class="font-mono font-bold text-blue-400">-- dB</span>
-                        </div>
-                         <div class="w-full bg-blue-900/30 rounded-full h-1.5">
-                            <div id="barExpected" class="bg-blue-500 h-1.5 rounded-full" style="width: 0%"></div>
+                        <div class="flex items-baseline">
+                            <span id="sysLoss" class="text-4xl font-bold text-white tracking-tight">--</span>
+                            <span class="ml-2 text-slate-400 text-lg">dB</span>
                         </div>
                         
-                        <div class="mt-auto pt-4 flex justify-between text-xs text-slate-500">
-                            <span>Sys Eff: <span id="sysEff" class="text-slate-300">--%</span></span>
-                            <span>Max Eff: <span id="expEff" class="text-blue-300">--%</span></span>
+                        <div class="mt-4 pt-4 border-t border-slate-700/50">
+                             <h3 class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">System Efficiency</h3>
+                             <div class="flex items-baseline">
+                                <span id="sysEfficiency" class="text-2xl font-mono text-emerald-400">--%</span>
+                            </div>
+                            <p class="text-[10px] text-slate-500 mt-1 font-mono tracking-tighter"><span class="var-sc">η<sub>sys</sub></span> = (<span class="var-sc">V<sub>out</sub></span> / <span class="var-sc">V<sub>in,ref</sub></span>) / <span class="var-sc">SP<sub>eff</sub></span></p>
+                             <p id="sysWarning" class="hidden text-[10px] text-amber-400 mt-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Measured > Theoretical.</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Detailed Analysis Table -->
                 <div class="bg-slate-900 rounded-xl p-6 card-shadow border border-slate-800">
-                    <h3 class="font-semibold text-white mb-4 text-sm uppercase tracking-wide border-b border-slate-800 pb-2">Loss Budget Breakdown</h3>
+                    <h3 class="font-semibold text-white mb-4 text-sm uppercase tracking-wide border-b border-slate-800 pb-2 flex justify-between">
+                        <span>Simultaneous Loss Budget Breakdown</span>
+                    </h3>
                     
                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left">
-                            <thead class="text-xs text-slate-400 bg-slate-800 uppercase">
+                        <table class="w-full text-sm text-left whitespace-nowrap">
+                            <thead class="text-[10px] text-slate-400 bg-slate-800 uppercase">
                                 <tr>
-                                    <th class="px-4 py-3 rounded-l-lg">Source</th>
-                                    <th class="px-4 py-3">Parameters</th>
-                                    <th class="px-4 py-3 text-right">Efficiency</th>
-                                    <th class="px-4 py-3 text-right rounded-r-lg">Loss (dB)</th>
+                                    <th class="px-3 py-3 rounded-l-lg">Source</th>
+                                    <th class="px-3 py-3">Parameters (SP / DP)</th>
+                                    <th class="px-3 py-3 text-right text-blue-400/80">SP Eff.</th>
+                                    <th class="px-3 py-3 text-right text-amber-400/80">DP Eff.</th>
+                                    <th class="px-3 py-3 text-right text-blue-400/80">SP Loss</th>
+                                    <th class="px-3 py-3 text-right text-amber-400/80 rounded-r-lg">DP Loss</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-800 text-slate-300">
                                 <tr>
-                                    <td class="px-4 py-3 font-medium text-slate-200">Mirrors</td>
-                                    <td class="px-4 py-3 text-slate-500"><span id="lblMirrors">3</span> surfaces @ <span id="lblMirrorRef">98</span>%</td>
-                                    <td class="px-4 py-3 text-right font-mono text-emerald-400" id="valMirrorLin">--</td>
-                                    <td class="px-4 py-3 text-right font-mono text-slate-400" id="valMirrordB">--</td>
+                                    <td class="px-3 py-2 font-medium text-slate-200">Mirrors</td>
+                                    <td class="px-3 py-2 text-slate-500 text-xs"><span id="lblMirrorsSp">3</span> / <span id="lblMirrorsDp">6</span> surf @ <span id="lblMirrorRef">94</span>%</td>
+                                    <td class="px-3 py-2 text-right font-mono text-blue-300" id="valMirrorLinSp">--</td>
+                                    <td class="px-3 py-2 text-right font-mono text-amber-300" id="valMirrorLinDp">--</td>
+                                    <td class="px-3 py-2 text-right font-mono text-slate-400" id="valMirrordBSp">--</td>
+                                    <td class="px-3 py-2 text-right font-mono text-slate-400" id="valMirrordBDp">--</td>
                                 </tr>
                                 <tr>
-                                    <td class="px-4 py-3 font-medium text-slate-200">Glass / Lenses</td>
-                                    <td class="px-4 py-3 text-slate-500"><span id="lblGlass">4</span> surfaces, <span id="lblGlassRef">0.5</span>% R</td>
-                                    <td class="px-4 py-3 text-right font-mono text-emerald-400" id="valGlassLin">--</td>
-                                    <td class="px-4 py-3 text-right font-mono text-slate-400" id="valGlassdB">--</td>
+                                    <td class="px-3 py-2 font-medium text-slate-200">Glass / Lenses</td>
+                                    <td class="px-3 py-2 text-slate-500 text-xs"><span id="lblGlassSp">4</span> / <span id="lblGlassDp">10</span> surf @ <span id="lblGlassRef">1.0</span>% R</td>
+                                    <td class="px-3 py-2 text-right font-mono text-blue-300" id="valGlassLinSp">--</td>
+                                    <td class="px-3 py-2 text-right font-mono text-amber-300" id="valGlassLinDp">--</td>
+                                    <td class="px-3 py-2 text-right font-mono text-slate-400" id="valGlassdBSp">--</td>
+                                    <td class="px-3 py-2 text-right font-mono text-slate-400" id="valGlassdBDp">--</td>
                                 </tr>
                                 <tr>
-                                    <td class="px-4 py-3 font-medium text-slate-200">Internal BS</td>
-                                    <td class="px-4 py-3 text-slate-500">Double Pass, T = <span id="lblBSTrans">45</span>%</td>
-                                    <td class="px-4 py-3 text-right font-mono text-emerald-400" id="valBSLin">--</td>
-                                    <td class="px-4 py-3 text-right font-mono text-slate-400" id="valBSdB">--</td>
+                                    <td class="px-3 py-2 font-medium text-slate-200">Internal BS</td>
+                                    <td class="px-3 py-2 text-slate-500 text-xs">T<sup>1</sup> / T<sup>2</sup> @ <span id="lblBSTrans">60</span>%</td>
+                                    <td class="px-3 py-2 text-right font-mono text-blue-300" id="valBSLinSp">--</td>
+                                    <td class="px-3 py-2 text-right font-mono text-amber-300" id="valBSLinDp">--</td>
+                                    <td class="px-3 py-2 text-right font-mono text-slate-400" id="valBSdBSp">--</td>
+                                    <td class="px-3 py-2 text-right font-mono text-slate-400" id="valBSdBDp">--</td>
                                 </tr>
                                 <tr>
-                                    <td class="px-4 py-3 font-medium text-slate-200">Aperture Mirror</td>
-                                    <td class="px-4 py-3 text-slate-500">R = <span id="lblApRef">99</span>%</td>
-                                    <td class="px-4 py-3 text-right font-mono text-emerald-400" id="valApLin">--</td>
-                                    <td class="px-4 py-3 text-right font-mono text-slate-400" id="valApdB">--</td>
+                                    <td class="px-3 py-2 font-medium text-slate-200">External BS</td>
+                                    <td class="px-3 py-2 text-slate-500 text-xs">-- / T @ <span id="lblExtBSTrans">50</span>%</td>
+                                    <td class="px-3 py-2 text-right font-mono text-slate-600">--</td>
+                                    <td class="px-3 py-2 text-right font-mono text-amber-300" id="valExtBSLinDp">--</td>
+                                    <td class="px-3 py-2 text-right font-mono text-slate-600">--</td>
+                                    <td class="px-3 py-2 text-right font-mono text-slate-400" id="valExtBSdBDp">--</td>
                                 </tr>
-                                <tr class="bg-blue-900/20">
-                                    <td class="px-4 py-3 font-bold text-blue-400">Total Component Loss</td>
-                                    <td class="px-4 py-3 text-blue-500/70 italic">Maximum theoretical floor</td>
-                                    <td class="px-4 py-3 text-right font-mono font-bold text-blue-400" id="totalCompLin">--</td>
-                                    <td class="px-4 py-3 text-right font-mono font-bold text-blue-400" id="totalCompdB">--</td>
+                                <tr>
+                                    <td class="px-3 py-2 font-medium text-slate-200">Aperture Mirror</td>
+                                    <td class="px-3 py-2 text-slate-500 text-xs">-- / R @ <span id="lblApRef">95</span>%</td>
+                                    <td class="px-3 py-2 text-right font-mono text-slate-600">--</td>
+                                    <td class="px-3 py-2 text-right font-mono text-amber-300" id="valApLinDp">--</td>
+                                    <td class="px-3 py-2 text-right font-mono text-slate-600">--</td>
+                                    <td class="px-3 py-2 text-right font-mono text-slate-400" id="valApdBDp">--</td>
+                                </tr>
+                                <tr class="bg-slate-800/50">
+                                    <td class="px-3 py-3 font-bold text-slate-200">Total Theoretical (<span class="var-sc">SP<sub>eff</sub></span> / <span class="var-sc">DP<sub>eff</sub></span>)</td>
+                                    <td class="px-3 py-3 text-slate-500/70 text-xs italic">Maximum expected floor</td>
+                                    <td class="px-3 py-3 text-right font-mono font-bold text-blue-400" id="totalCompLinSp">--</td>
+                                    <td class="px-3 py-3 text-right font-mono font-bold text-amber-400" id="totalCompLinDp">--</td>
+                                    <td class="px-3 py-3 text-right font-mono font-bold text-blue-400" id="totalCompdBSp">--</td>
+                                    <td class="px-3 py-3 text-right font-mono font-bold text-amber-400" id="totalCompdBDp">--</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -278,20 +404,41 @@
 
                 <!-- Charts Area -->
                 <div class="bg-slate-900 rounded-xl p-6 card-shadow border border-slate-800">
-                    <canvas id="lossChart" height="120"></canvas>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-semibold text-white text-sm uppercase tracking-wide">Comparative Attenuation Profile</h3>
+                        <div class="flex space-x-4 text-xs">
+                            <div class="flex items-center"><span class="w-3 h-3 rounded-sm bg-blue-500 mr-2"></span> Single Pass</div>
+                            <div class="flex items-center"><span class="w-3 h-3 rounded-sm bg-amber-500 mr-2"></span> Double Pass</div>
+                        </div>
+                    </div>
+                    <canvas id="lossChart" height="80"></canvas>
                 </div>
 
             </div>
-        </div>
-
-    </main>
+        </main>
+        
+        <!-- Footer Area (Visible in PDF) -->
+        <footer class="container mx-auto px-4 pb-6 max-w-7xl">
+            <div class="pt-4 border-t border-slate-800 flex justify-between items-center">
+                <p class="text-xs text-slate-500 font-mono">
+                    <i class="fa-solid fa-link mr-1"></i>
+                    <a href="https://mfo78.github.io/FSOC_Coupling/" target="_blank" class="text-blue-500 hover:text-blue-400 transition-colors">https://mfo78.github.io/FSOC_Coupling/</a>
+                </p>
+                <p class="text-xs text-slate-500 font-mono">
+                    Optical Validation Report
+                </p>
+            </div>
+        </footer>
+        
+    </div> <!-- End Export Wrapper -->
 
     <script>
         // --- DOM Elements ---
         const inputs = {
-            vIn: document.getElementById('vIn'),
+            vInMeasured: document.getElementById('vInMeasured'),
+            vInRef: document.getElementById('vInRef'),
             vOut: document.getElementById('vOut'),
-            vOutSlider: document.getElementById('vOutSlider'), // New Slider
+            vOutSlider: document.getElementById('vOutSlider'),
             // Mirrors
             mirrorCountSlider: document.getElementById('mirrorCount'), 
             mirrorCountNum: document.getElementById('mirrorCountNum'),
@@ -300,47 +447,60 @@
             glassCountSlider: document.getElementById('glassCount'), 
             glassCountNum: document.getElementById('glassCountNum'),
             glassRef: document.getElementById('glassReflectivity'),
-            // Other
+            // Other Components
             bsTrans: document.getElementById('bsTransmission'),
+            extBsTrans: document.getElementById('extBsTransmission'),
             apRef: document.getElementById('apertureReflectivity'),
         };
 
         const displays = {
-            lblMirrors: document.getElementById('lblMirrors'),
+            lblMirrorsSp: document.getElementById('lblMirrorsSp'),
+            lblMirrorsDp: document.getElementById('lblMirrorsDp'),
             lblMirrorRef: document.getElementById('lblMirrorRef'),
-            lblGlass: document.getElementById('lblGlass'),
+            lblGlassSp: document.getElementById('lblGlassSp'),
+            lblGlassDp: document.getElementById('lblGlassDp'),
             lblGlassRef: document.getElementById('lblGlassRef'),
             lblBSTrans: document.getElementById('lblBSTrans'),
-            lblApRef: document.getElementById('lblApRef')
+            lblExtBSTrans: document.getElementById('lblExtBSTrans'),
+            lblApRef: document.getElementById('lblApRef'),
         };
 
         const results = {
-            excessLoss: document.getElementById('excessLoss'),
-            couplingEfficiency: document.getElementById('couplingEfficiency'),
-            efficiencyWarning: document.getElementById('efficiencyWarning'),
-            measuredLoss: document.getElementById('measuredLoss'),
-            expectedLoss: document.getElementById('expectedLoss'),
-            barMeasured: document.getElementById('barMeasured'),
-            barExpected: document.getElementById('barExpected'),
-            sysEff: document.getElementById('sysEff'),
-            expEff: document.getElementById('expEff'),
+            smfLoss: document.getElementById('smfLoss'),
+            smfEfficiency: document.getElementById('smfEfficiency'),
+            smfWarning: document.getElementById('smfWarning'),
+            sysLoss: document.getElementById('sysLoss'),
+            sysEfficiency: document.getElementById('sysEfficiency'),
+            sysWarning: document.getElementById('sysWarning'),
             
-            // Table
-            valMirrorLin: document.getElementById('valMirrorLin'),
-            valMirrordB: document.getElementById('valMirrordB'),
-            valGlassLin: document.getElementById('valGlassLin'),
-            valGlassdB: document.getElementById('valGlassdB'),
-            valBSLin: document.getElementById('valBSLin'),
-            valBSdB: document.getElementById('valBSdB'),
-            valApLin: document.getElementById('valApLin'),
-            valApdB: document.getElementById('valApdB'),
-            totalCompLin: document.getElementById('totalCompLin'),
-            totalCompdB: document.getElementById('totalCompdB'),
+            // Table Elements SP
+            valMirrorLinSp: document.getElementById('valMirrorLinSp'),
+            valMirrordBSp: document.getElementById('valMirrordBSp'),
+            valGlassLinSp: document.getElementById('valGlassLinSp'),
+            valGlassdBSp: document.getElementById('valGlassdBSp'),
+            valBSLinSp: document.getElementById('valBSLinSp'),
+            valBSdBSp: document.getElementById('valBSdBSp'),
+            totalCompLinSp: document.getElementById('totalCompLinSp'),
+            totalCompdBSp: document.getElementById('totalCompdBSp'),
+            
+            // Table Elements DP
+            valMirrorLinDp: document.getElementById('valMirrorLinDp'),
+            valMirrordBDp: document.getElementById('valMirrordBDp'),
+            valGlassLinDp: document.getElementById('valGlassLinDp'),
+            valGlassdBDp: document.getElementById('valGlassdBDp'),
+            valBSLinDp: document.getElementById('valBSLinDp'),
+            valBSdBDp: document.getElementById('valBSdBDp'),
+            valExtBSLinDp: document.getElementById('valExtBSLinDp'),
+            valExtBSdBDp: document.getElementById('valExtBSdBDp'),
+            valApLinDp: document.getElementById('valApLinDp'),
+            valApdBDp: document.getElementById('valApdBDp'),
+            totalCompLinDp: document.getElementById('totalCompLinDp'),
+            totalCompdBDp: document.getElementById('totalCompdBDp'),
         };
 
         // --- Chart Config ---
-        Chart.defaults.color = '#94a3b8'; // slate-400
-        Chart.defaults.borderColor = '#334155'; // slate-700
+        Chart.defaults.color = '#94a3b8'; 
+        Chart.defaults.borderColor = '#334155'; 
 
         let lossChart;
         function initChart() {
@@ -348,20 +508,23 @@
             lossChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['Mirrors', 'Glass', 'BS (2x)', 'Aperture', 'Coupling (Excess)'],
-                    datasets: [{
-                        label: 'Loss Contribution (dB)',
-                        data: [0, 0, 0, 0, 0],
-                        backgroundColor: [
-                            '#475569', // Mirrors (slate-600)
-                            '#475569', // Glass
-                            '#64748b', // BS (slate-500)
-                            '#334155', // Aperture (slate-700)
-                            '#f59e0b'  // Coupling (Amber-500 for attention)
-                        ],
-                        borderRadius: 4,
-                        borderWidth: 0
-                    }]
+                    labels: ['Mirrors', 'Glass', 'Int. BS', 'Ext. BS', 'Aperture', 'Excess Loss (Coupling/System)'],
+                    datasets: [
+                        {
+                            label: 'Single Pass (dB)',
+                            data: [0, 0, 0, 0, 0, 0],
+                            backgroundColor: '#3b82f6', // blue-500
+                            borderRadius: 4,
+                            borderWidth: 0
+                        },
+                        {
+                            label: 'Double Pass (dB)',
+                            data: [0, 0, 0, 0, 0, 0],
+                            backgroundColor: '#f59e0b', // amber-500
+                            borderRadius: 4,
+                            borderWidth: 0
+                        }
+                    ]
                 },
                 options: {
                     indexAxis: 'y',
@@ -375,7 +538,7 @@
                             borderColor: '#475569',
                             borderWidth: 1,
                             callbacks: {
-                                label: (ctx) => `${ctx.formattedValue} dB`
+                                label: (ctx) => `${ctx.dataset.label}: ${ctx.formattedValue} dB`
                             }
                         }
                     },
@@ -395,140 +558,317 @@
 
         // --- Math & Logic ---
         function calculate() {
-            // 1. Get Values
-            const vIn = parseFloat(inputs.vIn.value) || 0;
-            
-            // Dynamic Slider Constraint: Max cannot exceed Input
-            inputs.vOutSlider.max = vIn;
-            
+            // 1. Get Base Values
+            const vInMeasured = parseFloat(inputs.vInMeasured.value) || 0;
             const vOut = parseFloat(inputs.vOut.value) || 0;
             
-            // Read from Number inputs (source of truth for count)
-            const N_m = parseInt(inputs.mirrorCountNum.value) || 0;
+            inputs.vOutSlider.max = vInMeasured; // Bound slider to max input
+
+            const N_m_sp = parseInt(inputs.mirrorCountNum.value) || 0;
             const R_m = (parseFloat(inputs.mirrorRef.value) || 0) / 100;
             
-            const N_g = parseInt(inputs.glassCountNum.value) || 0;
+            const N_g_sp = parseInt(inputs.glassCountNum.value) || 0;
             const R_g = (parseFloat(inputs.glassRef.value) || 0) / 100;
             
             const T_bs = (parseFloat(inputs.bsTrans.value) || 0) / 100;
-            const R_ap = (parseFloat(inputs.apRef.value) || 0) / 100;
+            const T_ext_bs = (parseFloat(inputs.extBsTrans.value) || 0) / 100;
+            const R_ap_raw = (parseFloat(inputs.apRef.value) || 0) / 100;
+
+            // 2. Double Pass Constraints
+            const N_m_dp = N_m_sp * 2;
+            const N_g_dp = (N_g_sp * 2) + 2; // +2 from Ext BS
 
             // Update Labels
-            displays.lblMirrors.textContent = N_m;
+            displays.lblMirrorsSp.textContent = N_m_sp;
+            displays.lblMirrorsDp.textContent = N_m_dp;
             displays.lblMirrorRef.textContent = (R_m * 100).toFixed(1);
-            displays.lblGlass.textContent = N_g;
+            
+            displays.lblGlassSp.textContent = N_g_sp;
+            displays.lblGlassDp.textContent = N_g_dp;
             displays.lblGlassRef.textContent = (R_g * 100).toFixed(2);
+            
             displays.lblBSTrans.textContent = (T_bs * 100).toFixed(1);
-            displays.lblApRef.textContent = (R_ap * 100).toFixed(1);
+            displays.lblExtBSTrans.textContent = (T_ext_bs * 100).toFixed(1);
+            displays.lblApRef.textContent = (R_ap_raw * 100).toFixed(1);
 
-            // 2. Component Calculations (Linear Factors)
-            // Mirrors: R^N
-            const factorMirrors = Math.pow(R_m, N_m);
-            // Glass: (1-R)^N (Transmission per surface)
+            // 3. Component Calculations (Linear Factors)
+            // Single Pass Factors
+            const factorMirrors_sp = Math.pow(R_m, N_m_sp);
             const T_surf = 1 - R_g;
-            const factorGlass = Math.pow(T_surf, N_g);
-            // BS: Transmits twice -> T^2
-            const factorBS = Math.pow(T_bs, 2);
-            // Aperture Mirror: R
-            const factorAp = R_ap;
+            const factorGlass_sp = Math.pow(T_surf, N_g_sp);
+            const factorBS_sp = T_bs;
+            const totalExpectedFactor_sp = factorMirrors_sp * factorGlass_sp * factorBS_sp;
 
-            const totalExpectedFactor = factorMirrors * factorGlass * factorBS * factorAp;
+            // Double Pass Factors
+            const factorMirrors_dp = Math.pow(R_m, N_m_dp);
+            const factorGlass_dp = Math.pow(T_surf, N_g_dp);
+            const factorBS_dp = Math.pow(T_bs, 2);
+            const factorExtBS_dp = T_ext_bs;
+            const factorAp_dp = R_ap_raw;
+            const totalExpectedFactor_dp = factorMirrors_dp * factorGlass_dp * factorBS_dp * factorExtBS_dp * factorAp_dp;
 
-            // 3. dB Calculations
+            // Compute Reference Vin (Single Pass baseline based on Double Pass launch and SP Max Eff)
+            const vInRef = vInMeasured * totalExpectedFactor_sp * R_ap_raw;
+            inputs.vInRef.value = vInRef ? vInRef.toFixed(3) : "0.000";
+
+            // 4. dB Calculations
             const toDB = (val) => val > 0 ? -10 * Math.log10(val) : 0;
             
-            const dbMirrors = toDB(factorMirrors);
-            const dbGlass = toDB(factorGlass);
-            const dbBS = toDB(factorBS);
-            const dbAp = toDB(factorAp);
-            const dbExpectedTotal = dbMirrors + dbGlass + dbBS + dbAp;
+            // SP dB
+            const dbMirrors_sp = toDB(factorMirrors_sp);
+            const dbGlass_sp = toDB(factorGlass_sp);
+            const dbBS_sp = toDB(factorBS_sp);
+            const dbExpectedTotal_sp = dbMirrors_sp + dbGlass_sp + dbBS_sp;
 
-            // 4. Measured System Values
-            let dbMeasuredTotal = 0;
-            let measuredLinear = 0;
-            if (vIn > 0 && vOut > 0) {
-                measuredLinear = vOut / vIn;
-                dbMeasuredTotal = -10 * Math.log10(measuredLinear);
-            } else if (vIn > 0 && vOut === 0) {
-                dbMeasuredTotal = 999; // Total loss
+            // DP dB
+            const dbMirrors_dp = toDB(factorMirrors_dp);
+            const dbGlass_dp = toDB(factorGlass_dp);
+            const dbBS_dp = toDB(factorBS_dp);
+            const dbExtBS_dp = toDB(factorExtBS_dp);
+            const dbAp_dp = toDB(factorAp_dp);
+            const dbExpectedTotal_dp = dbMirrors_dp + dbGlass_dp + dbBS_dp + dbExtBS_dp + dbAp_dp;
+
+            // 5. Measured System Values
+            let dbMeasuredTotal_dp = 0, dbMeasuredTotal_sp = 0;
+            
+            if (vInMeasured > 0 && vOut > 0) {
+                dbMeasuredTotal_dp = -10 * Math.log10(vOut / vInMeasured);
+            } else if (vInMeasured > 0 && vOut === 0) {
+                dbMeasuredTotal_dp = 999;
             }
 
-            // 5. Excess (Coupling) Loss
-            let dbCoupling = dbMeasuredTotal - dbExpectedTotal;
-            
-            // NOTE: REMOVED clamp to allow negative dB (gain vs theory)
-            // if (dbCoupling < 0) dbCoupling = 0; 
-            
-            if (dbMeasuredTotal === 999) dbCoupling = 0;
-            
-            // Coupling Efficiency (Linear)
-            const couplingEff = Math.pow(10, -dbCoupling / 10);
+            if (vInRef > 0 && vOut > 0) {
+                dbMeasuredTotal_sp = -10 * Math.log10(vOut / vInRef);
+            } else if (vInRef > 0 && vOut === 0) {
+                dbMeasuredTotal_sp = 999;
+            }
 
-            // 6. Update UI
+            // 6. Excess Losses
+            let smfLoss = dbMeasuredTotal_dp - dbExpectedTotal_dp;
+            if (dbMeasuredTotal_dp === 999) smfLoss = 0;
+            const smfEff = Math.pow(10, -smfLoss / 10);
+
+            let sysLoss = dbMeasuredTotal_sp - dbExpectedTotal_sp;
+            if (dbMeasuredTotal_sp === 999) sysLoss = 0;
+            const sysEff = Math.pow(10, -sysLoss / 10);
+
+            // 7. Update UI Tables
             const toPct = (val) => (val * 100).toFixed(1) + "%";
 
-            results.valMirrorLin.textContent = toPct(factorMirrors);
-            results.valMirrordB.textContent = dbMirrors.toFixed(2);
-            results.valGlassLin.textContent = toPct(factorGlass);
-            results.valGlassdB.textContent = dbGlass.toFixed(2);
-            results.valBSLin.textContent = toPct(factorBS);
-            results.valBSdB.textContent = dbBS.toFixed(2);
-            results.valApLin.textContent = toPct(factorAp);
-            results.valApdB.textContent = dbAp.toFixed(2);
-            
-            results.totalCompLin.textContent = toPct(totalExpectedFactor);
-            results.totalCompdB.textContent = dbExpectedTotal.toFixed(2);
+            // SP Column
+            results.valMirrorLinSp.textContent = toPct(factorMirrors_sp);
+            results.valMirrordBSp.textContent = dbMirrors_sp.toFixed(2);
+            results.valGlassLinSp.textContent = toPct(factorGlass_sp);
+            results.valGlassdBSp.textContent = dbGlass_sp.toFixed(2);
+            results.valBSLinSp.textContent = toPct(factorBS_sp);
+            results.valBSdBSp.textContent = dbBS_sp.toFixed(2);
+            results.totalCompLinSp.textContent = toPct(totalExpectedFactor_sp);
+            results.totalCompdBSp.textContent = dbExpectedTotal_sp.toFixed(2);
 
-            results.measuredLoss.textContent = dbMeasuredTotal.toFixed(2) + " dB";
-            results.expectedLoss.textContent = dbExpectedTotal.toFixed(2) + " dB";
-            results.excessLoss.textContent = dbCoupling.toFixed(2);
+            // DP Column
+            results.valMirrorLinDp.textContent = toPct(factorMirrors_dp);
+            results.valMirrordBDp.textContent = dbMirrors_dp.toFixed(2);
+            results.valGlassLinDp.textContent = toPct(factorGlass_dp);
+            results.valGlassdBDp.textContent = dbGlass_dp.toFixed(2);
+            results.valBSLinDp.textContent = toPct(factorBS_dp);
+            results.valBSdBDp.textContent = dbBS_dp.toFixed(2);
+            results.valExtBSLinDp.textContent = toPct(factorExtBS_dp);
+            results.valExtBSdBDp.textContent = dbExtBS_dp.toFixed(2);
+            results.valApLinDp.textContent = toPct(factorAp_dp);
+            results.valApdBDp.textContent = dbAp_dp.toFixed(2);
+            results.totalCompLinDp.textContent = toPct(totalExpectedFactor_dp);
+            results.totalCompdBDp.textContent = dbExpectedTotal_dp.toFixed(2);
+
+            // 8. Update Result Cards
+            results.smfLoss.textContent = smfLoss.toFixed(2);
+            results.smfEfficiency.textContent = toPct(smfEff);
             
-            results.couplingEfficiency.textContent = toPct(couplingEff);
-            
-            // Warning logic for Eff > 100%
-            if (couplingEff > 1.0) {
-                results.couplingEfficiency.classList.remove('text-emerald-400');
-                results.couplingEfficiency.classList.add('text-amber-400');
-                results.efficiencyWarning.classList.remove('hidden');
+            if (smfEff > 1.0) {
+                results.smfEfficiency.classList.replace('text-emerald-400', 'text-amber-400');
+                results.smfWarning.classList.remove('hidden');
             } else {
-                results.couplingEfficiency.classList.add('text-emerald-400');
-                results.couplingEfficiency.classList.remove('text-amber-400');
-                results.efficiencyWarning.classList.add('hidden');
+                results.smfEfficiency.classList.replace('text-amber-400', 'text-emerald-400');
+                results.smfWarning.classList.add('hidden');
             }
+
+            results.sysLoss.textContent = sysLoss.toFixed(2);
+            results.sysEfficiency.textContent = toPct(sysEff);
             
-            results.sysEff.textContent = toPct(measuredLinear);
-            results.expEff.textContent = toPct(totalExpectedFactor);
+            if (sysEff > 1.0) {
+                results.sysEfficiency.classList.replace('text-emerald-400', 'text-amber-400');
+                results.sysWarning.classList.remove('hidden');
+            } else {
+                results.sysEfficiency.classList.replace('text-amber-400', 'text-emerald-400');
+                results.sysWarning.classList.add('hidden');
+            }
 
-            // Progress bars
-            const maxVal = Math.max(dbMeasuredTotal, dbExpectedTotal, 10); 
-            results.barMeasured.style.width = Math.min((dbMeasuredTotal / maxVal) * 100, 100) + "%";
-            results.barExpected.style.width = Math.min((dbExpectedTotal / maxVal) * 100, 100) + "%";
-
-            // 7. Update Chart
+            // 9. Update Grouped Bar Chart
             if (lossChart) {
-                // If coupling is negative (eff > 100%), chart handles it but looks weird. 
-                // We clamp visual chart data to 0 min for clarity unless specific need.
-                // But user wants to see results. We'll leave raw value.
-                
+                // Dataset 0: Single Pass
                 lossChart.data.datasets[0].data = [
-                    parseFloat(dbMirrors.toFixed(2)), 
-                    parseFloat(dbGlass.toFixed(2)), 
-                    parseFloat(dbBS.toFixed(2)), 
-                    parseFloat(dbAp.toFixed(2)), 
-                    parseFloat(dbCoupling.toFixed(2))
+                    parseFloat(dbMirrors_sp.toFixed(2)), 
+                    parseFloat(dbGlass_sp.toFixed(2)), 
+                    parseFloat(dbBS_sp.toFixed(2)), 
+                    0, // Ext BS not in SP
+                    0, // Aperture not in SP
+                    parseFloat(sysLoss.toFixed(2))
                 ];
-                
-                // Change bar color if negative loss (gain)
-                const couplingColor = dbCoupling < 0 ? '#ef4444' : '#f59e0b'; // Red if impossible, Amber normal
-                lossChart.data.datasets[0].backgroundColor[4] = couplingColor;
-                
+                lossChart.data.datasets[0].backgroundColor = sysLoss < 0 ? '#ef4444' : '#3b82f6'; // Red if impossible
+
+                // Dataset 1: Double Pass
+                lossChart.data.datasets[1].data = [
+                    parseFloat(dbMirrors_dp.toFixed(2)), 
+                    parseFloat(dbGlass_dp.toFixed(2)), 
+                    parseFloat(dbBS_dp.toFixed(2)), 
+                    parseFloat(dbExtBS_dp.toFixed(2)),
+                    parseFloat(dbAp_dp.toFixed(2)), 
+                    parseFloat(smfLoss.toFixed(2))
+                ];
+                lossChart.data.datasets[1].backgroundColor = smfLoss < 0 ? '#ef4444' : '#f59e0b'; // Red if impossible
+
                 lossChart.update();
             }
         }
 
+        // --- Custom PDF Export Logic (Strict 1-Page Center Fit + DOM Swap) ---
+        document.getElementById('btnExport').addEventListener('click', function() {
+            const btn = this;
+            const originalContent = btn.innerHTML;
+            
+            // Visual loading state
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Generating...';
+            btn.disabled = true;
+            document.body.classList.add('pdf-exporting');
+
+            // 1. Swap <input type="number"> with standard <div> nodes
+            // This physically bypasses the html2canvas input clipping bug
+            const numInputs = document.querySelectorAll('input[type="number"]');
+            numInputs.forEach(input => {
+                const span = document.createElement('div');
+                span.textContent = input.value;
+                // Strip the structural dark mode classes, leave layout classes
+                span.className = input.className.replace(/bg-slate-\d+|border|border-slate-\d+|text-white/g, '') + ' temp-export-span';
+                
+                // Read horizontal justification dynamically
+                let justify = 'flex-start';
+                if (input.classList.contains('text-right')) justify = 'flex-end';
+                if (input.classList.contains('text-center')) justify = 'center';
+                
+                // Force raw CSS alignment to mimic a clean input field
+                span.style.cssText = `
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: ${justify} !important;
+                    color: #0f172a !important;
+                    font-weight: 700 !important;
+                    background: transparent !important;
+                    border: none !important;
+                `;
+                
+                input.style.setProperty('display', 'none', 'important');
+                input.parentNode.insertBefore(span, input);
+                input._tempSpan = span;
+            });
+
+            // 2. Temporarily update Chart.js colors to Light Theme for PDF capture
+            const originalChartColor = Chart.defaults.color;
+            const originalChartBorderColor = Chart.defaults.borderColor;
+            const originalScaleTitleColor = lossChart.options.scales.x.title.color;
+            const originalScaleGridColor = lossChart.options.scales.x.grid.color;
+
+            Chart.defaults.color = '#475569';
+            Chart.defaults.borderColor = '#e2e8f0';
+            lossChart.options.scales.x.title.color = '#475569';
+            lossChart.options.scales.x.grid.color = '#e2e8f0';
+            lossChart.update('none'); // Update without animation
+
+            const targetEl = document.getElementById('export-content');
+
+            // 3. Capture DOM as High-Res Canvas
+            html2canvas(targetEl, { 
+                scale: 2, 
+                useCORS: true, 
+                backgroundColor: '#f8fafc', // Tailwind slate-50
+                windowWidth: 1200 // Lock desktop grid layout width
+            }).then(canvas => {
+                
+                // 4. Initialize pure jsPDF
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('l', 'mm', 'a4'); // Landscape A4
+                
+                const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                
+                // A4 Dimensions in mm
+                const pdfWidth = 297; 
+                const pdfHeight = 210;
+
+                // 5. Define target bounding box (100% of A4 area)
+                const targetWidth = pdfWidth * 1;
+                const targetHeight = pdfHeight * 1;
+
+                // 6. Calculate aspect ratios
+                const imgProps = pdf.getImageProperties(imgData);
+                const canvasRatio = imgProps.width / imgProps.height;
+                const targetRatio = targetWidth / targetHeight;
+
+                let finalWidth, finalHeight;
+
+                // 7. Fit image strictly within the 90% bounding box without distortion
+                if (canvasRatio > targetRatio) {
+                    // Image is wider than bounding box (Constrain by width)
+                    finalWidth = targetWidth;
+                    finalHeight = targetWidth / canvasRatio;
+                } else {
+                    // Image is taller than bounding box (Constrain by height)
+                    finalHeight = targetHeight;
+                    finalWidth = targetHeight * canvasRatio;
+                }
+
+                // 8. Calculate perfect center coordinates
+                const xOffset = (pdfWidth - finalWidth) / 2;
+                const yOffset = (pdfHeight - finalHeight) / 2;
+
+                // 9. Inject and save
+                pdf.addImage(imgData, 'JPEG', xOffset, yOffset, finalWidth, finalHeight);
+                pdf.save(`FSO_Coupling_Report_${new Date().toISOString().slice(0,10)}.pdf`);
+
+                // Restore UI State function
+                restoreUI();
+
+            }).catch(err => {
+                console.error("PDF Export Error: ", err);
+                btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-amber-400 mr-2"></i> Error';
+                setTimeout(() => {
+                    restoreUI();
+                }, 3000);
+            });
+
+            function restoreUI() {
+                // Revert button
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
+                document.body.classList.remove('pdf-exporting');
+                
+                // Revert Chart
+                Chart.defaults.color = originalChartColor;
+                Chart.defaults.borderColor = originalChartBorderColor;
+                lossChart.options.scales.x.title.color = originalScaleTitleColor;
+                lossChart.options.scales.x.grid.color = originalScaleGridColor;
+                lossChart.update('none');
+
+                // Revert DOM inputs
+                const numInputs = document.querySelectorAll('input[type="number"]');
+                numInputs.forEach(input => {
+                    input.style.display = '';
+                    if (input._tempSpan) {
+                        input._tempSpan.remove();
+                        delete input._tempSpan;
+                    }
+                });
+            }
+        });
+
         // --- Event Listeners ---
-        
-        // 1. Sync Logic for Mirrors
         inputs.mirrorCountSlider.addEventListener('input', () => {
             inputs.mirrorCountNum.value = inputs.mirrorCountSlider.value;
             calculate();
@@ -538,7 +878,6 @@
             calculate();
         });
 
-        // 2. Sync Logic for Glass
         inputs.glassCountSlider.addEventListener('input', () => {
             inputs.glassCountNum.value = inputs.glassCountSlider.value;
             calculate();
@@ -548,7 +887,6 @@
             calculate();
         });
 
-        // 3. Sync Logic for VOut Slider
         inputs.vOutSlider.addEventListener('input', () => {
             inputs.vOut.value = inputs.vOutSlider.value;
             calculate();
@@ -558,8 +896,7 @@
             calculate();
         });
 
-        // 4. Other Inputs
-        [inputs.vIn, inputs.mirrorRef, inputs.glassRef, inputs.bsTrans, inputs.apRef].forEach(input => {
+        [inputs.vInMeasured, inputs.mirrorRef, inputs.glassRef, inputs.bsTrans, inputs.extBsTrans, inputs.apRef].forEach(input => {
             input.addEventListener('input', calculate);
         });
 

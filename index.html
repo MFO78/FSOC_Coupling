@@ -119,6 +119,7 @@
         .pdf-exporting header { padding-top: 1rem !important; padding-bottom: 1rem !important; }
         .pdf-exporting .py-8 { padding-top: 1rem !important; padding-bottom: 1rem !important; }
         .pdf-exporting .gap-8 { gap: 1rem !important; }
+        .pdf-exporting .gap-6 { gap: 0.75rem !important; }
         .pdf-exporting .gap-4 { gap: 0.5rem !important; }
         .pdf-exporting .space-y-6 > * + * { margin-top: 0.75rem !important; }
         .pdf-exporting .p-6 { padding: 1rem !important; }
@@ -138,7 +139,7 @@
                     <p class="text-slate-400 text-sm mt-1">Simultaneous Optical Link Budget Analysis</p>
                 </div>
                 <div class="hidden md:flex flex-col items-end gap-2">
-                    <p class="text-xs text-slate-500 font-mono">v2.4.0 | AF Engineering Tools</p>
+                    <p class="text-xs text-slate-500 font-mono">v2.6.0 | AF Engineering Tools</p>
                     <button id="btnExport" class="hide-on-export flex items-center text-[11px] font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 py-1.5 px-3 rounded border border-slate-700 transition-colors shadow-sm">
                         <i class="fa-solid fa-file-pdf text-red-400 mr-2"></i> Export PDF
                     </button>
@@ -162,7 +163,7 @@
                             <div>
                                 <label class="block text-xs font-medium text-slate-400 uppercase mb-1">Measured (<span class="var-sc">V<sub>in,meas</sub></span>)</label>
                                 <div class="relative">
-                                    <input type="number" id="vInMeasured" value="0.411" step="0.001" class="w-full pl-3 pr-8 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors font-mono text-sm placeholder-slate-600">
+                                    <input type="number" id="vInMeasured" value="8.000" step="0.001" class="w-full pl-3 pr-8 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors font-mono text-sm placeholder-slate-600">
                                     <span class="absolute right-3 top-2 text-slate-500 text-xs">V</span>
                                 </div>
                                 <p class="text-[10px] text-slate-500 mt-1">Double Pass Launch</p>
@@ -173,16 +174,16 @@
                                     <input type="number" id="vInRef" readonly class="w-full pl-3 pr-8 py-2 bg-slate-900 border border-slate-700 text-slate-400 rounded-lg font-mono text-sm cursor-not-allowed">
                                     <span class="absolute right-3 top-2 text-slate-600 text-xs">V</span>
                                 </div>
-                                <p class="text-[10px] text-slate-500 mt-1">Computed SP Baseline</p>
+                                <p class="text-[10px] text-slate-500 mt-1 font-mono tracking-tighter"><span class="var-sc">V<sub>in,ref</sub></span> = <span class="var-sc">V<sub>in,meas</sub></span> × (<span class="var-sc">DP<sub>eff</sub></span> / <span class="var-sc">SP<sub>eff</sub></span>)</p>
                             </div>
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-slate-400 uppercase mb-1">Output (<span class="var-sc">V<sub>out</sub></span>)</label>
                             <div class="relative mb-2">
-                                <input type="number" id="vOut" value="0.030" step="0.001" class="w-full pl-3 pr-8 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors font-mono text-sm placeholder-slate-600">
+                                <input type="number" id="vOut" value="0.300" step="0.001" class="w-full pl-3 pr-8 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors font-mono text-sm placeholder-slate-600">
                                 <span class="absolute right-3 top-2 text-slate-500 text-xs">V</span>
                             </div>
-                            <input type="range" id="vOutSlider" min="0" max="5" step="0.001" value="0.030" class="w-full h-2">
+                            <input type="range" id="vOutSlider" min="0" max="10" step="0.001" value="0.300" class="w-full h-2">
                             <p class="text-[10px] text-slate-500 mt-1">Coupled Return Signal</p>
                         </div>
                     </div>
@@ -237,7 +238,7 @@
                         <div class="flex items-center justify-between mt-2">
                             <label class="text-xs text-slate-400">Transmission (<span class="var-sc">T<sub>bs</sub></span>)</label>
                             <div class="relative w-24">
-                                <input type="number" id="bsTransmission" value="60.0" step="0.1" max="100" class="w-full pl-2 pr-6 py-1 text-right text-xs bg-slate-800 border border-slate-600 text-white rounded focus:ring-blue-500">
+                                <input type="number" id="bsTransmission" value="80.0" step="0.1" max="100" class="w-full pl-2 pr-6 py-1 text-right text-xs bg-slate-800 border border-slate-600 text-white rounded focus:ring-blue-500">
                                 <span class="absolute right-2 top-1 text-slate-500 text-xs">%</span>
                             </div>
                         </div>
@@ -276,45 +277,21 @@
             </div>
 
             <!-- Right Column: Results -->
-            <div class="lg:col-span-8 space-y-6">
+            <div class="lg:col-span-8 flex flex-col gap-6 h-full">
                 
-                <!-- Dual Result KPIs -->
+                <!-- Dual Result KPIs (Decoupled System vs Coupling) -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     
-                    <!-- SMF Loss Card (Double Pass) -->
-                    <div class="bg-slate-800 text-white p-6 rounded-xl card-shadow border border-amber-500/30 relative overflow-hidden">
-                        <div class="absolute -right-4 -top-4 opacity-[0.03]">
-                            <i class="fa-solid fa-bullseye text-9xl"></i>
-                        </div>
-                        <div class="flex justify-between items-start mb-1">
-                            <h3 class="text-amber-400 text-xs font-semibold uppercase tracking-wider">SMF Loss</h3>
-                            <span class="text-[10px] bg-amber-900/40 text-amber-300 px-2 py-0.5 rounded-full border border-amber-800/50">Double Pass</span>
-                        </div>
-                        <div class="flex items-baseline">
-                            <span id="smfLoss" class="text-4xl font-bold text-white tracking-tight">--</span>
-                            <span class="ml-2 text-slate-400 text-lg">dB</span>
-                        </div>
-                        
-                        <div class="mt-4 pt-4 border-t border-slate-700/50">
-                             <h3 class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">SMF Coupling</h3>
-                             <div class="flex items-baseline">
-                                <span id="smfEfficiency" class="text-2xl font-mono text-emerald-400">--%</span>
-                            </div>
-                            <p class="text-[10px] text-slate-500 mt-1 font-mono tracking-tighter"><span class="var-sc">η<sub>smf</sub></span> = (<span class="var-sc">V<sub>out</sub></span> / <span class="var-sc">V<sub>in,meas</sub></span>) / <span class="var-sc">DP<sub>eff</sub></span></p>
-                             <p id="smfWarning" class="hidden text-[10px] text-amber-400 mt-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Measured > Theoretical.</p>
-                        </div>
-                    </div>
-
-                    <!-- System Loss Card (Single Pass) -->
+                    <!-- System Performance Card (Left/Blue) -->
                     <div class="bg-slate-800 text-white p-6 rounded-xl card-shadow border border-blue-500/30 relative overflow-hidden">
                         <div class="absolute -right-4 -top-4 opacity-[0.03]">
-                            <i class="fa-solid fa-wave-square text-9xl"></i>
+                            <i class="fa-solid fa-wave-square text-9xl text-blue-500"></i>
                         </div>
                         <div class="flex justify-between items-start mb-1">
                             <h3 class="text-blue-400 text-xs font-semibold uppercase tracking-wider">System Loss</h3>
-                            <span class="text-[10px] bg-blue-900/40 text-blue-300 px-2 py-0.5 rounded-full border border-blue-800/50">Single Pass</span>
+                            <span class="text-[10px] bg-blue-900/40 text-blue-300 px-2 py-0.5 rounded-full border border-blue-800/50">Full Path</span>
                         </div>
-                        <div class="flex items-baseline">
+                        <div class="flex items-baseline mt-2">
                             <span id="sysLoss" class="text-4xl font-bold text-white tracking-tight">--</span>
                             <span class="ml-2 text-slate-400 text-lg">dB</span>
                         </div>
@@ -324,8 +301,32 @@
                              <div class="flex items-baseline">
                                 <span id="sysEfficiency" class="text-2xl font-mono text-emerald-400">--%</span>
                             </div>
-                            <p class="text-[10px] text-slate-500 mt-1 font-mono tracking-tighter"><span class="var-sc">η<sub>sys</sub></span> = (<span class="var-sc">V<sub>out</sub></span> / <span class="var-sc">V<sub>in,ref</sub></span>) / <span class="var-sc">SP<sub>eff</sub></span></p>
-                             <p id="sysWarning" class="hidden text-[10px] text-amber-400 mt-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Measured > Theoretical.</p>
+                            <p class="text-[10px] text-slate-500 mt-1 font-mono tracking-tighter"><span class="var-sc">η<sub>sys</sub></span> = <span class="var-sc">V<sub>out</sub></span> / (<span class="var-sc">V<sub>in,meas</sub></span> × <span class="var-sc">DP<sub>eff</sub></span>)</p>
+                            <p id="sysWarning" class="hidden text-[10px] text-amber-400 mt-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Measured > Theoretical.</p>
+                        </div>
+                    </div>
+
+                    <!-- SMF Coupling Card (Right/Emerald) -->
+                    <div class="bg-slate-800 text-white p-6 rounded-xl card-shadow border border-emerald-500/30 relative overflow-hidden">
+                        <div class="absolute -right-4 -top-4 opacity-[0.03]">
+                            <i class="fa-solid fa-bullseye text-9xl text-emerald-500"></i>
+                        </div>
+                        <div class="flex justify-between items-start mb-1">
+                            <h3 class="text-emerald-400 text-xs font-semibold uppercase tracking-wider">SMF Coupling Loss</h3>
+                            <span class="text-[10px] bg-emerald-900/40 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-800/50">Isolated Tip Mismatch</span>
+                        </div>
+                        <div class="flex items-baseline mt-2">
+                            <span id="smfLoss" class="text-4xl font-bold text-white tracking-tight">--</span>
+                            <span class="ml-2 text-slate-400 text-lg">dB</span>
+                        </div>
+                        
+                        <div class="mt-4 pt-4 border-t border-slate-700/50">
+                            <h3 class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Coupling Efficiency</h3>
+                            <div class="flex items-baseline">
+                                <span id="smfEfficiency" class="text-2xl font-mono text-emerald-400">--%</span>
+                            </div>
+                            <p class="text-[10px] text-slate-500 mt-1 font-mono tracking-tighter"><span class="var-sc">η<sub>smf</sub></span> = <span class="var-sc">η<sub>sys</sub></span> / <span class="var-sc">SP<sub>eff</sub></span></p>
+                            <p id="smfWarning" class="hidden text-[10px] text-amber-400 mt-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Measured > Theoretical.</p>
                         </div>
                     </div>
                 </div>
@@ -402,16 +403,18 @@
                     </div>
                 </div>
 
-                <!-- Charts Area -->
-                <div class="bg-slate-900 rounded-xl p-6 card-shadow border border-slate-800">
+                <!-- Charts Area (Dynamic Vertical Expansion) -->
+                <div class="bg-slate-900 rounded-xl p-6 card-shadow border border-slate-800 flex flex-col flex-1">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="font-semibold text-white text-sm uppercase tracking-wide">Comparative Attenuation Profile</h3>
                         <div class="flex space-x-4 text-xs">
-                            <div class="flex items-center"><span class="w-3 h-3 rounded-sm bg-blue-500 mr-2"></span> Single Pass</div>
-                            <div class="flex items-center"><span class="w-3 h-3 rounded-sm bg-amber-500 mr-2"></span> Double Pass</div>
+                            <div class="flex items-center"><span class="w-3 h-3 rounded-sm bg-blue-500 mr-2"></span> System Loss</div>
+                            <div class="flex items-center"><span class="w-3 h-3 rounded-sm bg-amber-500 mr-2"></span> SMF Coupling</div>
                         </div>
                     </div>
-                    <canvas id="lossChart" height="80"></canvas>
+                    <div class="relative flex-1 w-full min-h-[80px]">
+                        <canvas id="lossChart"></canvas>
+                    </div>
                 </div>
 
             </div>
@@ -466,12 +469,12 @@
         };
 
         const results = {
-            smfLoss: document.getElementById('smfLoss'),
-            smfEfficiency: document.getElementById('smfEfficiency'),
-            smfWarning: document.getElementById('smfWarning'),
             sysLoss: document.getElementById('sysLoss'),
             sysEfficiency: document.getElementById('sysEfficiency'),
             sysWarning: document.getElementById('sysWarning'),
+            smfLoss: document.getElementById('smfLoss'),
+            smfEfficiency: document.getElementById('smfEfficiency'),
+            smfWarning: document.getElementById('smfWarning'),
             
             // Table Elements SP
             valMirrorLinSp: document.getElementById('valMirrorLinSp'),
@@ -508,17 +511,17 @@
             lossChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['Mirrors', 'Glass', 'Int. BS', 'Ext. BS', 'Aperture', 'Excess Loss (Coupling/System)'],
+                    labels: ['Mirrors', 'Glass', 'Int. BS', 'Ext. BS', 'Aperture', 'Excess Loss (System/Coupling)'],
                     datasets: [
                         {
-                            label: 'Single Pass (dB)',
+                            label: 'System Loss (dB)',
                             data: [0, 0, 0, 0, 0, 0],
                             backgroundColor: '#3b82f6', // blue-500
                             borderRadius: 4,
                             borderWidth: 0
                         },
                         {
-                            label: 'Double Pass (dB)',
+                            label: 'SMF Coupling (dB)',
                             data: [0, 0, 0, 0, 0, 0],
                             backgroundColor: '#f59e0b', // amber-500
                             borderRadius: 4,
@@ -527,6 +530,7 @@
                     ]
                 },
                 options: {
+                    maintainAspectRatio: false, // Forces dynamic scaling to parent flex boundary
                     indexAxis: 'y',
                     responsive: true,
                     plugins: {
@@ -607,8 +611,8 @@
             const factorAp_dp = R_ap_raw;
             const totalExpectedFactor_dp = factorMirrors_dp * factorGlass_dp * factorBS_dp * factorExtBS_dp * factorAp_dp;
 
-            // Compute Reference Vin (Single Pass baseline based on Double Pass launch and SP Max Eff)
-            const vInRef = vInMeasured * totalExpectedFactor_sp * R_ap_raw;
+            // Compute Reference Vin (Single Pass baseline based on exact forward path derivation)
+            const vInRef = vInMeasured * (totalExpectedFactor_dp / totalExpectedFactor_sp);
             inputs.vInRef.value = vInRef ? vInRef.toFixed(3) : "0.000";
 
             // 4. dB Calculations
@@ -628,29 +632,22 @@
             const dbAp_dp = toDB(factorAp_dp);
             const dbExpectedTotal_dp = dbMirrors_dp + dbGlass_dp + dbBS_dp + dbExtBS_dp + dbAp_dp;
 
-            // 5. Measured System Values
-            let dbMeasuredTotal_dp = 0, dbMeasuredTotal_sp = 0;
+            // 5. De-coupled Measured System & Coupling Values
+            let sysEff = 0, sysLoss = 0;
+            let smfEff = 0, smfLoss = 0;
             
             if (vInMeasured > 0 && vOut > 0) {
-                dbMeasuredTotal_dp = -10 * Math.log10(vOut / vInMeasured);
+                // System Efficiency: Total Unexplained Loss against the Double Pass Limit
+                sysEff = vOut / (vInMeasured * totalExpectedFactor_dp);
+                sysLoss = -10 * Math.log10(sysEff);
+
+                // SMF Coupling: System Efficiency divided by Single Pass theoretical transmission
+                smfEff = sysEff / totalExpectedFactor_sp;
+                smfLoss = sysLoss - dbExpectedTotal_sp; // Logarithmic equivalent of division
             } else if (vInMeasured > 0 && vOut === 0) {
-                dbMeasuredTotal_dp = 999;
+                sysLoss = 999;
+                smfLoss = 999;
             }
-
-            if (vInRef > 0 && vOut > 0) {
-                dbMeasuredTotal_sp = -10 * Math.log10(vOut / vInRef);
-            } else if (vInRef > 0 && vOut === 0) {
-                dbMeasuredTotal_sp = 999;
-            }
-
-            // 6. Excess Losses
-            let smfLoss = dbMeasuredTotal_dp - dbExpectedTotal_dp;
-            if (dbMeasuredTotal_dp === 999) smfLoss = 0;
-            const smfEff = Math.pow(10, -smfLoss / 10);
-
-            let sysLoss = dbMeasuredTotal_sp - dbExpectedTotal_sp;
-            if (dbMeasuredTotal_sp === 999) sysLoss = 0;
-            const sysEff = Math.pow(10, -sysLoss / 10);
 
             // 7. Update UI Tables
             const toPct = (val) => (val * 100).toFixed(1) + "%";
@@ -680,20 +677,9 @@
             results.totalCompdBDp.textContent = dbExpectedTotal_dp.toFixed(2);
 
             // 8. Update Result Cards
-            results.smfLoss.textContent = smfLoss.toFixed(2);
-            results.smfEfficiency.textContent = toPct(smfEff);
-            
-            if (smfEff > 1.0) {
-                results.smfEfficiency.classList.replace('text-emerald-400', 'text-amber-400');
-                results.smfWarning.classList.remove('hidden');
-            } else {
-                results.smfEfficiency.classList.replace('text-amber-400', 'text-emerald-400');
-                results.smfWarning.classList.add('hidden');
-            }
-
+            // System Performance (Blue)
             results.sysLoss.textContent = sysLoss.toFixed(2);
             results.sysEfficiency.textContent = toPct(sysEff);
-            
             if (sysEff > 1.0) {
                 results.sysEfficiency.classList.replace('text-emerald-400', 'text-amber-400');
                 results.sysWarning.classList.remove('hidden');
@@ -702,29 +688,40 @@
                 results.sysWarning.classList.add('hidden');
             }
 
+            // SMF Coupling (Emerald)
+            results.smfLoss.textContent = smfLoss.toFixed(2);
+            results.smfEfficiency.textContent = toPct(smfEff);
+            if (smfEff > 1.0) {
+                results.smfEfficiency.classList.replace('text-emerald-400', 'text-amber-400');
+                results.smfWarning.classList.remove('hidden');
+            } else {
+                results.smfEfficiency.classList.replace('text-amber-400', 'text-emerald-400');
+                results.smfWarning.classList.add('hidden');
+            }
+
             // 9. Update Grouped Bar Chart
             if (lossChart) {
-                // Dataset 0: Single Pass
+                // Dataset 0: Single Pass Profile
                 lossChart.data.datasets[0].data = [
                     parseFloat(dbMirrors_sp.toFixed(2)), 
                     parseFloat(dbGlass_sp.toFixed(2)), 
                     parseFloat(dbBS_sp.toFixed(2)), 
                     0, // Ext BS not in SP
                     0, // Aperture not in SP
-                    parseFloat(sysLoss.toFixed(2))
+                    parseFloat(sysLoss.toFixed(2)) // 6th Bar: System Loss
                 ];
-                lossChart.data.datasets[0].backgroundColor = sysLoss < 0 ? '#ef4444' : '#3b82f6'; // Red if impossible
+                lossChart.data.datasets[0].backgroundColor = sysLoss < 0 ? '#ef4444' : '#3b82f6';
 
-                // Dataset 1: Double Pass
+                // Dataset 1: Double Pass Profile
                 lossChart.data.datasets[1].data = [
                     parseFloat(dbMirrors_dp.toFixed(2)), 
                     parseFloat(dbGlass_dp.toFixed(2)), 
                     parseFloat(dbBS_dp.toFixed(2)), 
                     parseFloat(dbExtBS_dp.toFixed(2)),
                     parseFloat(dbAp_dp.toFixed(2)), 
-                    parseFloat(smfLoss.toFixed(2))
+                    parseFloat(smfLoss.toFixed(2)) // 6th Bar: SMF Loss
                 ];
-                lossChart.data.datasets[1].backgroundColor = smfLoss < 0 ? '#ef4444' : '#f59e0b'; // Red if impossible
+                lossChart.data.datasets[1].backgroundColor = smfLoss < 0 ? '#ef4444' : '#f59e0b';
 
                 lossChart.update();
             }
@@ -802,9 +799,9 @@
                 const pdfWidth = 297; 
                 const pdfHeight = 210;
 
-                // 5. Define target bounding box (100% of A4 area)
-                const targetWidth = pdfWidth * 1;
-                const targetHeight = pdfHeight * 1;
+                // 5. Define target bounding box (90% of A4 area)
+                const targetWidth = pdfWidth * 0.90;
+                const targetHeight = pdfHeight * 0.90;
 
                 // 6. Calculate aspect ratios
                 const imgProps = pdf.getImageProperties(imgData);
